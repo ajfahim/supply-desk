@@ -26,21 +26,9 @@ export async function GET(request: NextRequest) {
     }
     
     const vendors = await Vendor.find(filter)
-      .sort({ companyName: 1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ companyName: 1 });
     
-    const total = await Vendor.countDocuments(filter);
-    
-    return NextResponse.json({
-      vendors,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
+    return NextResponse.json(vendors);
   } catch (error) {
     console.error('Error fetching vendors:', error);
     return NextResponse.json(

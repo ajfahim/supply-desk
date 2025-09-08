@@ -5,6 +5,7 @@ export { default as Product } from './Product';
 export { default as Client } from './Client';
 export { default as Requirement } from './Requirement';
 export { default as Quotation } from './Quotation';
+export { default as Settings } from './Settings';
 
 // Export types
 export type { ICategory } from './Category';
@@ -13,3 +14,4 @@ export type { IProduct, IVendorPrice } from './Product';
 export type { IClient, IClientContact } from './Client';
 export type { IRequirement, IRequirementItem } from './Requirement';
 export type { IQuotation, IQuotationItem, IProfitSummary } from './Quotation';
+export type { ISettings } from './Settings';

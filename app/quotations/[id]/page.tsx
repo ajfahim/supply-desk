@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Download, Edit, Send, Trash2 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { jsPDF } from "jspdf";
+import { ArrowLeft, Download, Edit, Send, Trash2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface QuotationItem {
   product: {
@@ -70,7 +69,7 @@ export default function QuotationDetailPage() {
   const router = useRouter();
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const quotationId = params.id as string;
@@ -83,13 +82,13 @@ export default function QuotationDetailPage() {
     try {
       const response = await fetch(`/api/quotations/${quotationId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch quotation');
+        throw new Error("Failed to fetch quotation");
       }
       const data = await response.json();
       setQuotation(data);
     } catch (err) {
-      setError('Failed to load quotation');
-      console.error('Error fetching quotation:', err);
+      setError("Failed to load quotation");
+      console.error("Error fetching quotation:", err);
     } finally {
       setLoading(false);
     }
@@ -97,326 +96,463 @@ export default function QuotationDetailPage() {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'review': return 'bg-yellow-100 text-yellow-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'expired': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "review":
+        return "bg-yellow-100 text-yellow-800";
+      case "sent":
+        return "bg-blue-100 text-blue-800";
+      case "accepted":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "expired":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-BD', {
-      style: 'currency',
-      currency: 'BDT',
+    return new Intl.NumberFormat("en-BD", {
+      style: "currency",
+      currency: "BDT",
       minimumFractionDigits: 0,
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-BD', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-BD", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const handleDownloadPDF = async () => {
     if (!quotation) return;
-    
+
     setIsGeneratingPDF(true);
     try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = 210;
       const pageHeight = 297;
-      const margin = 15;
+      const margin = 10;
       const contentWidth = pageWidth - 2 * margin;
       let currentY = margin;
 
       // Add logo
       try {
         const logoImg = new Image();
-        logoImg.src = '/logo.png';
+        logoImg.src = "/logo.png";
         await new Promise((resolve) => {
           logoImg.onload = resolve;
         });
-        
+
         // Add logo (top left)
-        pdf.addImage(logoImg, 'PNG', margin, currentY, 40, 20);
+        pdf.addImage(logoImg, "PNG", margin, currentY, 35, 18);
       } catch (error) {
-        console.log('Logo not loaded, continuing without it');
+        console.log("Logo not loaded, continuing without it");
       }
 
       // Company info (top right)
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
       pdf.setTextColor(100, 100, 100);
       const companyInfo = [
-        'Industrial Equipment Supplier',
-        'Email: info@steelroottraders.com',
-        'Phone: +880-2-123456789',
-        'www.steelroottraders.com'
+        "Industrial Equipment Supplier",
+        "Email: info@steelroottraders.com",
+        "Phone: +880-2-123456789",
+        "www.steelroottraders.com",
       ];
-      
-      let infoY = currentY + 5;
-      companyInfo.forEach(line => {
-        pdf.text(line, pageWidth - margin, infoY, { align: 'right' });
+
+      let infoY = currentY + 3;
+      companyInfo.forEach((line) => {
+        pdf.text(line, pageWidth - margin, infoY, { align: "right" });
         infoY += 3;
       });
 
-      currentY += 30;
+      currentY += 25;
 
       // Quotation title with border
       pdf.setFillColor(240, 240, 240);
-      pdf.rect(margin, currentY, contentWidth, 10, 'F');
+      pdf.rect(margin, currentY, contentWidth, 8, "F");
       pdf.setDrawColor(0, 0, 0);
-      pdf.rect(margin, currentY, contentWidth, 10);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
+      pdf.rect(margin, currentY, contentWidth, 8);
+
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
       pdf.setTextColor(0, 0, 0);
-      pdf.text('COMMERCIAL QUOTATION', pageWidth / 2, currentY + 7, { align: 'center' });
-      currentY += 15;
+      pdf.text("COMMERCIAL QUOTATION", pageWidth / 2, currentY + 5.5, {
+        align: "center",
+      });
+      currentY += 18; // Added more spacing below
 
       // Two column layout for TO and SHIP TO
       const leftColX = margin;
-      const rightColX = pageWidth / 2 + 10;
-      const colWidth = (contentWidth / 2) - 10;
+      const shipToContentX = pageWidth - margin - 60; // Move to far right
 
       // TO section
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('TO', leftColX, currentY);
-      currentY += 5;
-
-      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("TO", leftColX, currentY);
+
+      // SHIP TO section (far right)
+      pdf.text("SHIP TO", shipToContentX, currentY);
+      currentY += 4;
+
+      // TO content
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      let toY = currentY;
       const toLines = [
         quotation.client.companyName,
-        quotation.clientContact.name,
-        quotation.clientContact.title,
-        quotation.clientContact.email,
-        quotation.clientContact.phone
+        quotation.clientContact.name || "",
+        quotation.clientContact.title || "",
+        quotation.clientContact.email || "",
+        quotation.clientContact.phone || "",
       ];
 
-      toLines.forEach(line => {
-        if (line) {
-          pdf.text(line, leftColX, currentY);
-          currentY += 4;
+      toLines.forEach((line) => {
+        if (line.trim()) {
+          pdf.text(line, leftColX, toY);
+          toY += 3.5;
         }
       });
 
-      // SHIP TO section (right column)
-      let shipToY = currentY - (toLines.length * 4) - 5;
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.text('SHIP TO', rightColX, shipToY);
-      shipToY += 5;
+      // SHIP TO content
+      let shipToY = currentY;
+      pdf.text(quotation.client.companyName, shipToContentX, shipToY);
+      shipToY += 3.5;
+      pdf.text(quotation.client.industry, shipToContentX, shipToY);
 
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      pdf.text(quotation.client.companyName, rightColX, shipToY);
-      shipToY += 4;
-      pdf.text(quotation.client.industry, rightColX, shipToY);
+      // Quote details (far right side)
+      shipToY += 8;
+      pdf.text(
+        `Quote Date: ${formatDate(quotation.createdAt)}`,
+        shipToContentX,
+        shipToY
+      );
+      shipToY += 3.5;
+      pdf.text(`Valid For: 15 days`, shipToContentX, shipToY);
+      shipToY += 3.5;
+      pdf.text(`Ref: ${quotation.quotationNumber}`, shipToContentX, shipToY);
 
-      // Quote details (right side)
-      const quoteDetailsY = shipToY + 10;
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      pdf.text(`Quote Date: ${formatDate(quotation.createdAt)}`, rightColX, quoteDetailsY);
-      pdf.text(`Valid For: 15 days`, rightColX, quoteDetailsY + 4);
-      pdf.text(`Ref: ${quotation.quotationNumber}`, rightColX, quoteDetailsY + 8);
+      currentY = Math.max(toY, shipToY) + 8;
 
-      currentY += 25;
-
-      // Items table
+      // Items table (removed Size column)
       const tableStartY = currentY;
-      const colWidths = [15, 80, 25, 15, 20, 25, 30];
+      const colWidths = [12, 85, 15, 20, 28, 28];
       const colPositions = [margin];
       for (let i = 1; i < colWidths.length; i++) {
-        colPositions.push(colPositions[i-1] + colWidths[i-1]);
+        colPositions.push(colPositions[i - 1] + colWidths[i - 1]);
       }
 
       // Table header
       pdf.setFillColor(70, 130, 180); // Steel blue
-      pdf.rect(margin, currentY, contentWidth, 8, 'F');
-      
+      pdf.rect(margin, currentY, contentWidth, 10, "F");
+      pdf.setDrawColor(0, 0, 0);
+      pdf.rect(margin, currentY, contentWidth, 10);
+
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'bold');
-      
-      const headers = ['SL', 'Item', 'Size', 'Unit', 'Quantity', 'Unit Price\n(Supply)', 'Total Price (Supply)'];
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "bold");
+
+      const headers = [
+        "SL",
+        "Item",
+        "Unit",
+        "Quantity",
+        "Unit Price\n(Supply)",
+        "Total Price\n(Supply)",
+      ];
       headers.forEach((header, i) => {
-        const x = colPositions[i] + (colWidths[i] / 2);
-        pdf.text(header, x, currentY + 5, { align: 'center' });
+        const x = colPositions[i] + colWidths[i] / 2;
+
+        // Handle multi-line headers
+        if (header.includes("\n")) {
+          const lines = header.split("\n");
+          pdf.text(lines[0], x, currentY + 3.5, { align: "center" });
+          pdf.text(lines[1], x, currentY + 6.5, { align: "center" });
+        } else {
+          pdf.text(header, x, currentY + 5, { align: "center" });
+        }
+
+        // Draw column borders
+        if (i > 0) {
+          pdf.setDrawColor(255, 255, 255);
+          pdf.line(colPositions[i], currentY, colPositions[i], currentY + 10);
+        }
       });
-      
+
       currentY += 10;
 
       // Table rows
       pdf.setTextColor(0, 0, 0);
-      pdf.setFont('helvetica', 'normal');
-      
+      pdf.setFont("helvetica", "normal");
+
       quotation.items.forEach((item, index) => {
-        if (currentY > pageHeight - 50) {
+        if (currentY > pageHeight - 60) {
           pdf.addPage();
           currentY = margin;
         }
 
-        const rowHeight = 20;
-        
+        // Item (with all specifications consolidated)
+        const itemText = String(item.product.name || "");
+        const brandText = String(item.product.brand || "");
+        const modelText = String(item.product.modelName || "");
+
+        // Handle specifications - format with keys and values
+        const specsLines: string[] = [];
+        const specs = (item.product as any).specifications;
+        if (specs && typeof specs === "object") {
+          Object.entries(specs).forEach(([key, value]) => {
+            if (value) {
+              let formattedValue = value;
+              // Handle arrays (like certification)
+              if (Array.isArray(value)) {
+                formattedValue = value.join(", ");
+              }
+              specsLines.push(`${key}: ${formattedValue}`);
+            }
+          });
+        }
+
+        const vendorText = `Vendor: ${String(
+          item.selectedVendor?.companyName || "N/A"
+        )}`;
+
+        // Build comprehensive item description
+        let fullSpecs = "";
+        if (brandText) fullSpecs += `${brandText} `;
+        if (modelText) fullSpecs += `${modelText}`;
+
+        // Calculate dynamic row height based on content
+        const baseHeight = 18;
+        const lineHeight = 3;
+        let contentLines = 1; // Item name
+        if (fullSpecs.trim()) contentLines += 1; // Brand/model line
+        contentLines += specsLines.length; // All specification lines
+        contentLines += 1; // Vendor line
+
+        const rowHeight = Math.max(baseHeight, contentLines * lineHeight + 6);
+
         // Alternate row colors
         if (index % 2 === 0) {
           pdf.setFillColor(250, 250, 250);
-          pdf.rect(margin, currentY, contentWidth, rowHeight, 'F');
+          pdf.rect(margin, currentY, contentWidth, rowHeight, "F");
         }
 
         // Draw borders
         pdf.setDrawColor(200, 200, 200);
-        for (let i = 0; i < colPositions.length; i++) {
-          pdf.line(colPositions[i], currentY, colPositions[i], currentY + rowHeight);
+        for (let i = 0; i <= colWidths.length; i++) {
+          const x =
+            i === colWidths.length ? margin + contentWidth : colPositions[i];
+          pdf.line(x, currentY, x, currentY + rowHeight);
         }
-        pdf.line(margin + contentWidth, currentY, margin + contentWidth, currentY + rowHeight);
         pdf.line(margin, currentY, margin + contentWidth, currentY);
-        pdf.line(margin, currentY + rowHeight, margin + contentWidth, currentY + rowHeight);
+        pdf.line(
+          margin,
+          currentY + rowHeight,
+          margin + contentWidth,
+          currentY + rowHeight
+        );
 
         // Row content
-        pdf.setFontSize(8);
-        
-        // SL
-        pdf.text((index + 1).toString(), colPositions[0] + (colWidths[0] / 2), currentY + 5, { align: 'center' });
-        
-        // Item (with specifications)
-        const itemText = item.product.name;
-        const specText = `${item.product.brand || ''} ${item.product.modelName || ''}`.trim();
-        const vendorText = `Vendor: ${item.selectedVendor?.companyName || 'N/A'}`;
-        
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(itemText, colPositions[1] + 2, currentY + 5);
-        pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(7);
-        pdf.text(specText, colPositions[1] + 2, currentY + 9);
-        pdf.text(vendorText, colPositions[1] + 2, currentY + 13);
-        
-        pdf.setFontSize(8);
-        
-        // Size (using model name)
-        pdf.text(item.product.modelName || '-', colPositions[2] + (colWidths[2] / 2), currentY + 8, { align: 'center' });
-        
-        // Unit
-        pdf.text('PC', colPositions[3] + (colWidths[3] / 2), currentY + 8, { align: 'center' });
-        
-        // Quantity
-        pdf.text(item.quantity.toString(), colPositions[4] + (colWidths[4] / 2), currentY + 8, { align: 'center' });
-        
-        // Unit Price
-        pdf.text(formatCurrency(item.sellingPrice).replace('BDT', ''), colPositions[5] + (colWidths[5] / 2), currentY + 8, { align: 'center' });
-        
-        // Total Price
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(formatCurrency(item.lineTotal).replace('BDT', ''), colPositions[6] + (colWidths[6] / 2), currentY + 8, { align: 'center' });
-        
+
+        // SL
+        pdf.text(
+          (index + 1).toString(),
+          colPositions[0] + colWidths[0] / 2,
+          currentY + rowHeight / 2,
+          { align: "center" }
+        );
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text(itemText, colPositions[1] + 1, currentY + 3);
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(6);
+
+        let specY = currentY + 7;
+        if (fullSpecs.trim()) {
+          pdf.text(fullSpecs.trim(), colPositions[1] + 1, specY);
+          specY += 3;
+        }
+
+        // Display ALL specifications with keys
+        if (specsLines.length > 0) {
+          for (let i = 0; i < specsLines.length; i++) {
+            pdf.text(specsLines[i], colPositions[1] + 1, specY);
+            specY += 3;
+          }
+        }
+
+        pdf.text(vendorText, colPositions[1] + 1, specY);
+
+        pdf.setFontSize(7);
+
+        // Unit (moved to position 2 after removing Size)
+        pdf.text(
+          "PC",
+          colPositions[2] + colWidths[2] / 2,
+          currentY + rowHeight / 2,
+          { align: "center" }
+        );
+
+        // Quantity (now position 3)
+        pdf.text(
+          item.quantity.toString(),
+          colPositions[3] + colWidths[3] / 2,
+          currentY + rowHeight / 2,
+          { align: "center" }
+        );
+
+        // Unit Price (now position 4)
+        const unitPrice = item.sellingPrice.toFixed(0);
+        pdf.text(
+          unitPrice,
+          colPositions[4] + colWidths[4] / 2,
+          currentY + rowHeight / 2,
+          { align: "center" }
+        );
+
+        // Total Price (now position 5)
+        pdf.setFont("helvetica", "bold");
+        const totalPrice = item.lineTotal.toFixed(0);
+        pdf.text(
+          totalPrice,
+          colPositions[5] + colWidths[5] / 2,
+          currentY + rowHeight / 2,
+          { align: "center" }
+        );
+
         currentY += rowHeight;
       });
 
-      // Table footer with totals
-      currentY += 5;
-      const totalsStartX = colPositions[4];
-      const totalsWidth = colWidths[4] + colWidths[5] + colWidths[6];
-      
+      // Table footer with totals - align with table end
+      currentY += 2;
+      const totalsStartX = colPositions[3]; // Start from Quantity column (position 3)
+      const totalsWidth = colWidths[3] + colWidths[4] + colWidths[5]; // Span last 3 columns
+      const tableEndX = margin + contentWidth; // Actual table end position
+      const correctTotalsWidth = tableEndX - totalsStartX; // Calculate correct width
+
       // Subtotal
       pdf.setFillColor(240, 240, 240);
-      pdf.rect(totalsStartX, currentY, totalsWidth, 6, 'F');
+      pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5, "F");
       pdf.setDrawColor(0, 0, 0);
-      pdf.rect(totalsStartX, currentY, totalsWidth, 6);
-      
-      pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('SUBTOTAL', totalsStartX + 5, currentY + 4);
-      pdf.text(formatCurrency(quotation.subtotal).replace('BDT', ''), totalsStartX + totalsWidth - 5, currentY + 4, { align: 'right' });
-      currentY += 6;
+      pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("SUBTOTAL", totalsStartX + 2, currentY + 3.5);
+      pdf.text(
+        quotation.subtotal.toFixed(0),
+        totalsStartX + correctTotalsWidth - 2,
+        currentY + 3.5,
+        { align: "right" }
+      );
+      currentY += 5;
 
       if (quotation.discount > 0) {
-        pdf.rect(totalsStartX, currentY, totalsWidth, 6);
-        pdf.text('DISCOUNT', totalsStartX + 5, currentY + 4);
-        pdf.text(`-${formatCurrency(quotation.discount).replace('BDT', '')}`, totalsStartX + totalsWidth - 5, currentY + 4, { align: 'right' });
-        currentY += 6;
+        pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+        pdf.text("DISCOUNT", totalsStartX + 2, currentY + 3.5);
+        pdf.text(
+          `-${quotation.discount.toFixed(0)}`,
+          totalsStartX + correctTotalsWidth - 2,
+          currentY + 3.5,
+          { align: "right" }
+        );
+        currentY += 5;
       }
 
       if (quotation.taxAmount > 0) {
-        pdf.rect(totalsStartX, currentY, totalsWidth, 6);
-        pdf.text(`VAT RATE ${quotation.taxRate}%`, totalsStartX + 5, currentY + 4);
-        pdf.text(formatCurrency(quotation.taxAmount).replace('BDT', ''), totalsStartX + totalsWidth - 5, currentY + 4, { align: 'right' });
-        currentY += 6;
+        pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+        pdf.text(
+          `VAT RATE ${quotation.taxRate}%`,
+          totalsStartX + 2,
+          currentY + 3.5
+        );
+        pdf.text(
+          quotation.taxAmount.toFixed(0),
+          totalsStartX + correctTotalsWidth - 2,
+          currentY + 3.5,
+          { align: "right" }
+        );
+        currentY += 5;
       }
 
       // Grand Total
       pdf.setFillColor(70, 130, 180);
-      pdf.rect(totalsStartX, currentY, totalsWidth, 8, 'F');
+      pdf.rect(totalsStartX, currentY, correctTotalsWidth, 6, "F");
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Quote Total', totalsStartX + 5, currentY + 5);
-      pdf.text(`BDT ${formatCurrency(quotation.grandTotal).replace('BDT', '')}`, totalsStartX + totalsWidth - 5, currentY + 5, { align: 'right' });
-      
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Quote Total", totalsStartX + 2, currentY + 4);
+      pdf.text(
+        `BDT ${quotation.grandTotal.toFixed(0)}`,
+        totalsStartX + correctTotalsWidth - 2,
+        currentY + 4,
+        { align: "right" }
+      );
+
       currentY += 15;
 
       // Terms & Instructions
       pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Terms & Instructions', margin, currentY);
-      currentY += 5;
-
-      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
-      const terms = [
-        '50% Advance with Work order, rest after delivery',
-        'Delivery time: Supply 3-5 days After Getting PO',
-        'The Price included 5% AIT & 10% VAT'
-      ];
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Terms & Instructions", margin, currentY);
+      currentY += 4;
 
-      terms.forEach(term => {
-        pdf.text(term, margin, currentY);
-        currentY += 4;
-      });
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
+      const termsText =
+        quotation.terms || "50% Advance with Work order, rest after delivery";
+      pdf.text(termsText, margin, currentY);
+      currentY += 8;
 
-      // Add custom terms if available
-      if (quotation.deliveryTerms) {
-        pdf.text(`Delivery: ${quotation.deliveryTerms}`, margin, currentY);
-        currentY += 4;
+      // Footer - check if we need a new page
+      if (currentY > pageHeight - 40) {
+        pdf.addPage();
+        currentY = margin;
       }
-      if (quotation.paymentTerms) {
-        pdf.text(`Payment: ${quotation.paymentTerms}`, margin, currentY);
-        currentY += 4;
-      }
+
+      // Single footer section
+      const footerY = Math.max(currentY + 10, pageHeight - 35);
+
+      // Left side - Company info
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Authorized by", margin, footerY);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Steelroot Traders", margin, footerY + 4);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(6);
+      pdf.text("Industrial Equipment Supplier", margin, footerY + 7);
+
       if (quotation.warranty) {
-        pdf.text(`Warranty: ${quotation.warranty}`, margin, currentY);
-        currentY += 4;
+        pdf.text(`Warranty: ${quotation.warranty}`, margin, footerY + 11);
       }
 
-      currentY += 10;
+      // Right side - Signature line
+      pdf.setFontSize(7);
+      pdf.text("Authorized by", pageWidth - 50, footerY);
+      pdf.line(pageWidth - 50, footerY + 8, pageWidth - 10, footerY + 8);
 
-      // Footer signature area
-      const footerY = pageHeight - 40;
-      pdf.setFontSize(8);
-      pdf.text('Authorized by', pageWidth - 50, footerY);
-      pdf.line(pageWidth - 50, footerY + 10, pageWidth - 10, footerY + 10);
-      
-      // Company stamp area (left side)
-      pdf.text('Thank you for your business!', margin, footerY);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('STEELROOT TRADERS', margin, footerY + 5);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Your Trusted Industrial Equipment Partner', margin, footerY + 9);
+      // Bottom center - Thank you message
+      pdf.setFontSize(6);
+      pdf.text("Thank you for your business!", pageWidth / 2, footerY + 15, {
+        align: "center",
+      });
 
       // Save the PDF
       pdf.save(`${quotation.quotationNumber}.pdf`);
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -440,9 +576,16 @@ export default function QuotationDetailPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Quotation Not Found</h2>
-            <p className="text-gray-600 mb-4">{error || 'The requested quotation could not be found.'}</p>
-            <Button onClick={() => router.push('/quotations')} variant="outline">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Quotation Not Found
+            </h2>
+            <p className="text-gray-600 mb-4">
+              {error || "The requested quotation could not be found."}
+            </p>
+            <Button
+              onClick={() => router.push("/quotations")}
+              variant="outline"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Quotations
             </Button>
@@ -458,10 +601,7 @@ export default function QuotationDetailPage() {
       <div className="mb-6">
         {/* Top row with back button and actions */}
         <div className="flex items-center justify-between mb-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/quotations')}
-          >
+          <Button variant="outline" onClick={() => router.push("/quotations")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -473,9 +613,14 @@ export default function QuotationDetailPage() {
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isGeneratingPDF}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+            >
               <Download className="w-4 h-4 mr-2" />
-              {isGeneratingPDF ? 'Generating...' : 'PDF'}
+              {isGeneratingPDF ? "Generating..." : "PDF"}
             </Button>
             <Button size="sm">
               <Send className="w-4 h-4 mr-2" />
@@ -483,7 +628,7 @@ export default function QuotationDetailPage() {
             </Button>
           </div>
         </div>
-        
+
         {/* Second row with title and date */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -506,15 +651,23 @@ export default function QuotationDetailPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{quotation.client.companyName}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {quotation.client.companyName}
+                  </h3>
                   <p className="text-gray-600">{quotation.client.industry}</p>
                 </div>
                 <div>
                   <h4 className="font-medium">Contact Person</h4>
                   <p className="text-sm">{quotation.clientContact.name}</p>
-                  <p className="text-sm text-gray-600">{quotation.clientContact.title}</p>
-                  <p className="text-sm text-gray-600">{quotation.clientContact.email}</p>
-                  <p className="text-sm text-gray-600">{quotation.clientContact.phone}</p>
+                  <p className="text-sm text-gray-600">
+                    {quotation.clientContact.title}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {quotation.clientContact.email}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {quotation.clientContact.phone}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -546,12 +699,15 @@ export default function QuotationDetailPage() {
                               {item.product.brand} - {item.product.modelName}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Vendor: {item.selectedVendor?.companyName || 'N/A'}
+                              Vendor:{" "}
+                              {item.selectedVendor?.companyName || "N/A"}
                             </p>
                           </div>
                         </td>
                         <td className="text-center py-3">{item.quantity}</td>
-                        <td className="text-right py-3">{formatCurrency(item.sellingPrice)}</td>
+                        <td className="text-right py-3">
+                          {formatCurrency(item.sellingPrice)}
+                        </td>
                         <td className="text-right py-3 font-medium">
                           {formatCurrency(item.lineTotal)}
                         </td>
@@ -572,7 +728,11 @@ export default function QuotationDetailPage() {
                 {quotation.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>
-                      Discount ({quotation.discountType === 'percentage' ? `${quotation.discount}%` : 'Fixed'}):
+                      Discount (
+                      {quotation.discountType === "percentage"
+                        ? `${quotation.discount}%`
+                        : "Fixed"}
+                      ):
                     </span>
                     <span>-{formatCurrency(quotation.discount)}</span>
                   </div>
@@ -601,13 +761,17 @@ export default function QuotationDetailPage() {
               {quotation.deliveryTerms && (
                 <div>
                   <h4 className="font-medium mb-1">Delivery Terms</h4>
-                  <p className="text-sm text-gray-600">{quotation.deliveryTerms}</p>
+                  <p className="text-sm text-gray-600">
+                    {quotation.deliveryTerms}
+                  </p>
                 </div>
               )}
               {quotation.paymentTerms && (
                 <div>
                   <h4 className="font-medium mb-1">Payment Terms</h4>
-                  <p className="text-sm text-gray-600">{quotation.paymentTerms}</p>
+                  <p className="text-sm text-gray-600">
+                    {quotation.paymentTerms}
+                  </p>
                 </div>
               )}
               {quotation.warranty && (
@@ -642,11 +806,15 @@ export default function QuotationDetailPage() {
               </div>
               <div>
                 <label className="text-sm font-medium">Valid Until</label>
-                <p className="text-sm text-gray-600">{formatDate(quotation.validUntil)}</p>
+                <p className="text-sm text-gray-600">
+                  {formatDate(quotation.validUntil)}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Last Updated</label>
-                <p className="text-sm text-gray-600">{formatDate(quotation.updatedAt)}</p>
+                <p className="text-sm text-gray-600">
+                  {formatDate(quotation.updatedAt)}
+                </p>
               </div>
             </CardContent>
           </Card>

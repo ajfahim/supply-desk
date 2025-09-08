@@ -24,21 +24,9 @@ export async function GET(request: NextRequest) {
     }
     
     const clients = await Client.find(filter)
-      .sort({ companyName: 1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ companyName: 1 });
     
-    const total = await Client.countDocuments(filter);
-    
-    return NextResponse.json({
-      clients,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
+    return NextResponse.json(clients);
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json(

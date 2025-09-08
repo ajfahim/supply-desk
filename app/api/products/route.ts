@@ -24,21 +24,9 @@ export async function GET(request: NextRequest) {
     const products = await Product.find(filter)
       .populate('category', 'name')
       .populate('vendorPrices.vendor', 'companyName')
-      .sort(search ? { score: { $meta: 'textScore' } } : { name: 1 })
-      .skip(skip)
-      .limit(limit);
+      .sort(search ? { score: { $meta: 'textScore' } } : { name: 1 });
     
-    const total = await Product.countDocuments(filter);
-    
-    return NextResponse.json({
-      products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
+    return NextResponse.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
