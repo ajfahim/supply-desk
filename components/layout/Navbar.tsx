@@ -13,7 +13,8 @@ import {
   Building2, 
   BarChart3, 
   Settings,
-  Plus
+  Plus,
+  Calculator
 } from 'lucide-react';
 
 const navigation = [
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Vendors', href: '/vendors', icon: Building2 },
+  { name: 'Pricing', href: '/pricing', icon: Calculator },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

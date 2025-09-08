@@ -1,16 +1,43 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, Search, Calculator } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { PricingCalculator } from "@/lib/pricing";
+import {
+  Calculator,
+  DollarSign,
+  Plus,
+  Search,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Client {
   _id: string;
@@ -64,51 +91,106 @@ export default function NewQuotationPage() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedClient, setSelectedClient] = useState<string>('');
-  const [selectedContact, setSelectedContact] = useState<string>('');
+  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [selectedContact, setSelectedContact] = useState<string>("");
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [showProductDialog, setShowProductDialog] = useState(false);
-  const [productSearch, setProductSearch] = useState('');
+  const [productSearch, setProductSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  const [selectedProductForPricing, setSelectedProductForPricing] =
+    useState<Product | null>(null);
+  const [vendorPrice, setVendorPrice] = useState("");
+  const [profitMargin, setProfitMargin] = useState("25");
+  const [settings, setSettings] = useState<any>(null);
 
   // Form fields
-  const [validUntil, setValidUntil] = useState('');
-  const [deliveryTerms, setDeliveryTerms] = useState('FOB Destination');
-  const [paymentTerms, setPaymentTerms] = useState('30 days');
-  const [warranty, setWarranty] = useState('');
-  const [notes, setNotes] = useState('');
+  const [validUntil, setValidUntil] = useState("");
+  const [deliveryTerms, setDeliveryTerms] = useState("FOB Destination");
+  const [paymentTerms, setPaymentTerms] = useState("30 days");
+  const [warranty, setWarranty] = useState("");
+  const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
+  const [discountType, setDiscountType] = useState<"percentage" | "fixed">(
+    "percentage"
+  );
   const [taxRate, setTaxRate] = useState(0);
 
   useEffect(() => {
-    fetchClients();
-    fetchProducts();
-    
+    fetchClientsAndProducts();
+
     // Set default valid until date (30 days from now)
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 30);
-    setValidUntil(defaultDate.toISOString().split('T')[0]);
+    setValidUntil(defaultDate.toISOString().split("T")[0]);
   }, []);
 
-  const fetchClients = async () => {
+  const fetchClientsAndProducts = async () => {
     try {
-      const response = await fetch('/api/clients?limit=100');
-      const data = await response.json();
-      setClients(data.clients);
+      const [clientsResponse, productsResponse, settingsResponse] =
+        await Promise.all([
+          fetch("/api/clients"),
+          fetch("/api/products"),
+          fetch("/api/settings"),
+        ]);
+
+      const clientsData = await clientsResponse.json();
+      const productsData = await productsResponse.json();
+      const settingsData = await settingsResponse.json();
+
+      setClients(clientsData || []);
+      setProducts(productsData || []);
+      setSettings(settingsData);
+
+      if (settingsData?.pricing?.defaultProfitMargin) {
+        setProfitMargin(settingsData.pricing.defaultProfitMargin.toString());
+      }
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching data:", error);
     }
   };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/products?limit=100');
-      const data = await response.json();
-      setProducts(data.products);
-    } catch (error) {
-      console.error('Error fetching products:', error);
+  const openPricingCalculator = (product: Product) => {
+    setSelectedProductForPricing(product);
+    if (product.vendorPrices.length > 0) {
+      setVendorPrice(product.vendorPrices[0].price.toString());
     }
+    setPricingDialogOpen(true);
+  };
+
+  const calculatePricing = () => {
+    const price = parseFloat(vendorPrice);
+    const margin = parseFloat(profitMargin);
+
+    if (isNaN(price) || isNaN(margin)) return null;
+
+    return PricingCalculator.calculateSellingPrice(
+      price,
+      margin,
+      settings?.pricing?.roundPrices ?? true
+    );
+  };
+
+  const addProductWithCalculatedPrice = () => {
+    if (!selectedProductForPricing) return;
+
+    const pricing = calculatePricing();
+    if (!pricing) return;
+
+    const newItem: QuotationItem = {
+      product: selectedProductForPricing._id,
+      productName: selectedProductForPricing.name,
+      brand: selectedProductForPricing.brand,
+      modelName: selectedProductForPricing.modelName,
+      specifications: selectedProductForPricing.specifications,
+      quantity: 1,
+      unitPrice: pricing.sellingPrice,
+      unit: selectedProductForPricing.unit,
+    };
+
+    setItems([...items, newItem]);
+    setPricingDialogOpen(false);
+    setVendorPrice("");
   };
 
   const addProduct = (product: Product, vendorIndex: number) => {
@@ -128,27 +210,35 @@ export default function NewQuotationPage() {
       sellingPrice: vendor.price * 1.2,
       lineTotal: vendor.price * 1.2,
       deliveryTime: vendor.deliveryTime,
-      warranty: '',
-      notes: '',
+      warranty: "",
+      notes: "",
     };
-    
+
     setItems([...items, newItem]);
     setShowProductDialog(false);
-    setProductSearch('');
+    setProductSearch("");
   };
 
-  const updateItem = (index: number, field: keyof QuotationItem, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof QuotationItem,
+    value: any
+  ) => {
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
-    
+
     // Recalculate prices when quantity or margin changes
-    if (field === 'quantity' || field === 'profitMargin' || field === 'vendorCost') {
+    if (
+      field === "quantity" ||
+      field === "profitMargin" ||
+      field === "vendorCost"
+    ) {
       const item = updatedItems[index];
-      const marginMultiplier = 1 + (item.profitMargin / 100);
+      const marginMultiplier = 1 + item.profitMargin / 100;
       item.sellingPrice = item.vendorCost * marginMultiplier;
       item.lineTotal = item.sellingPrice * item.quantity;
     }
-    
+
     setItems(updatedItems);
   };
 
@@ -158,24 +248,24 @@ export default function NewQuotationPage() {
 
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-    
+
     let discountAmount = 0;
-    if (discountType === 'percentage') {
+    if (discountType === "percentage") {
       discountAmount = (subtotal * discount) / 100;
     } else {
       discountAmount = discount;
     }
-    
+
     const afterDiscount = subtotal - discountAmount;
     const taxAmount = (afterDiscount * taxRate) / 100;
     const grandTotal = afterDiscount + taxAmount;
-    
+
     return { subtotal, discountAmount, taxAmount, grandTotal };
   };
 
   const handleSubmit = async () => {
     if (!selectedClient || !selectedContact || items.length === 0) {
-      alert('Please fill in all required fields and add at least one item.');
+      alert("Please fill in all required fields and add at least one item.");
       return;
     }
 
@@ -193,13 +283,13 @@ export default function NewQuotationPage() {
         discount,
         discountType,
         taxRate,
-        createdBy: 'System User', // Replace with actual user
+        createdBy: "System User", // Replace with actual user
       };
 
-      const response = await fetch('/api/quotations', {
-        method: 'POST',
+      const response = await fetch("/api/quotations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(quotationData),
       });
@@ -208,11 +298,11 @@ export default function NewQuotationPage() {
         const quotation = await response.json();
         router.push(`/quotations/${quotation._id}`);
       } else {
-        throw new Error('Failed to create quotation');
+        throw new Error("Failed to create quotation");
       }
     } catch (error) {
-      console.error('Error creating quotation:', error);
-      alert('Failed to create quotation. Please try again.');
+      console.error("Error creating quotation:", error);
+      alert("Failed to create quotation. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -220,13 +310,15 @@ export default function NewQuotationPage() {
 
   const { subtotal, discountAmount, taxAmount, grandTotal } = calculateTotals();
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-    product.brand.toLowerCase().includes(productSearch.toLowerCase()) ||
-    product.modelName.toLowerCase().includes(productSearch.toLowerCase())
-  );
+  const filteredProducts =
+    products?.filter(
+      (product) =>
+        product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(productSearch.toLowerCase()) ||
+        product.modelName?.toLowerCase().includes(productSearch.toLowerCase())
+    ) || [];
 
-  const selectedClientData = clients.find(c => c._id === selectedClient);
+  const selectedClientData = clients?.find((c) => c._id === selectedClient);
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -234,18 +326,25 @@ export default function NewQuotationPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">New Quotation</h1>
-          <p className="text-gray-600 mt-1">Create a new quotation for your client</p>
+          <p className="text-gray-600 mt-1">
+            Create a new quotation for your client
+          </p>
         </div>
         <div className="space-x-2">
           <Button variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={loading || !selectedClient || !selectedContact || items.length === 0}
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              loading ||
+              !selectedClient ||
+              !selectedContact ||
+              items.length === 0
+            }
             className="bg-blue-600 hover:bg-blue-700"
           >
-            {loading ? 'Creating...' : 'Create Quotation'}
+            {loading ? "Creating..." : "Create Quotation"}
           </Button>
         </div>
       </div>
@@ -261,7 +360,10 @@ export default function NewQuotationPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="client">Client Company</Label>
-                <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <Select
+                  value={selectedClient}
+                  onValueChange={setSelectedClient}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a client" />
                   </SelectTrigger>
@@ -274,11 +376,14 @@ export default function NewQuotationPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {selectedClientData && (
                 <div>
                   <Label htmlFor="contact">Contact Person</Label>
-                  <Select value={selectedContact} onValueChange={setSelectedContact}>
+                  <Select
+                    value={selectedContact}
+                    onValueChange={setSelectedContact}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a contact" />
                     </SelectTrigger>
@@ -299,19 +404,22 @@ export default function NewQuotationPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Quotation Items</CardTitle>
-              <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
+              <Dialog
+                open={showProductDialog}
+                onOpenChange={setShowProductDialog}
+              >
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Product
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl">
+                <DialogContent className="min-w-[40vw] overflow-auto overflow-x-hidden">
                   <DialogHeader>
                     <DialogTitle>Select Product</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex flex-col h-full space-y-4">
+                    <div className="flex items-center space-x-2 flex-shrink-0">
                       <Search className="w-4 h-4 text-gray-400" />
                       <Input
                         placeholder="Search products..."
@@ -319,40 +427,229 @@ export default function NewQuotationPage() {
                         onChange={(e) => setProductSearch(e.target.value)}
                       />
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="flex-1 min-h-[50vh] border rounded-md">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead>Brand/Model</TableHead>
-                            <TableHead>Vendor</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Action</TableHead>
+                            <TableHead className="w-[25%]">Product</TableHead>
+                            <TableHead className="w-[20%]">
+                              Brand/Model
+                            </TableHead>
+                            <TableHead className="w-[20%]">Vendor</TableHead>
+                            <TableHead className="w-[15%]">Price</TableHead>
+                            <TableHead className="w-[20%]">Action</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredProducts.map((product) =>
-                            product.vendorPrices.map((vendor, vendorIndex) => (
-                              <TableRow key={`${product._id}-${vendorIndex}`}>
-                                <TableCell>{product.name}</TableCell>
-                                <TableCell>{product.brand} {product.modelName}</TableCell>
-                                <TableCell>{vendor.vendor.companyName}</TableCell>
-                                <TableCell>{vendor.price} {vendor.currency}</TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => addProduct(product, vendorIndex)}
+                          {filteredProducts.length > 0 ? (
+                            filteredProducts.map((product) =>
+                              product.vendorPrices.map(
+                                (vendor, vendorIndex) => (
+                                  <TableRow
+                                    key={`${product._id}-${vendorIndex}`}
                                   >
-                                    Add
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))
+                                    <TableCell className="w-[25%]">
+                                      <div
+                                        className="font-medium truncate"
+                                        title={product.name}
+                                      >
+                                        {product.name}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="w-[20%]">
+                                      <div
+                                        className="truncate"
+                                        title={`${product.brand} ${product.modelName}`}
+                                      >
+                                        {product.brand} {product.modelName}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="w-[20%]">
+                                      <div
+                                        className="truncate"
+                                        title={vendor.vendor.companyName}
+                                      >
+                                        {vendor.vendor.companyName}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="w-[15%]">
+                                      <div className="font-medium">
+                                        {vendor.price.toLocaleString()}{" "}
+                                        {vendor.currency}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="w-[20%]">
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() =>
+                                            addProduct(product, vendorIndex)
+                                          }
+                                          className="bg-blue-600 hover:bg-blue-700"
+                                        >
+                                          Add
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            openPricingCalculator(product)
+                                          }
+                                          className="flex items-center gap-1"
+                                        >
+                                          <Calculator className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              )
+                            )
+                          ) : (
+                            <TableRow>
+                              <TableCell
+                                colSpan={5}
+                                className="text-center py-8 text-gray-500"
+                              >
+                                {productSearch
+                                  ? "No products found matching your search."
+                                  : "No products available."}
+                              </TableCell>
+                            </TableRow>
                           )}
                         </TableBody>
                       </Table>
                     </div>
                   </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Pricing Calculator Dialog */}
+              <Dialog
+                open={pricingDialogOpen}
+                onOpenChange={setPricingDialogOpen}
+              >
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Calculator className="h-5 w-5" />
+                      Pricing Calculator
+                    </DialogTitle>
+                  </DialogHeader>
+                  {selectedProductForPricing && (
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 p-3 rounded-md">
+                        <h4 className="font-medium">
+                          {selectedProductForPricing.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {selectedProductForPricing.brand}{" "}
+                          {selectedProductForPricing.modelName}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="vendorPrice">
+                            Vendor Price ({settings?.pricing?.currency || "BDT"}
+                            )
+                          </Label>
+                          <Input
+                            id="vendorPrice"
+                            type="number"
+                            placeholder="0.00"
+                            value={vendorPrice}
+                            onChange={(e) => setVendorPrice(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="profitMargin">
+                            Profit Margin (%)
+                          </Label>
+                          <Input
+                            id="profitMargin"
+                            type="number"
+                            placeholder="25"
+                            value={profitMargin}
+                            onChange={(e) => setProfitMargin(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {selectedProductForPricing.vendorPrices.length > 0 && (
+                        <div>
+                          <Label>Available Vendor Prices</Label>
+                          <div className="grid gap-2 mt-1">
+                            {selectedProductForPricing.vendorPrices.map(
+                              (vp, index) => (
+                                <Button
+                                  key={index}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setVendorPrice(vp.price.toString())
+                                  }
+                                  className="justify-start"
+                                >
+                                  {vp.vendor.companyName}:{" "}
+                                  {vp.price.toLocaleString()} {vp.currency}
+                                </Button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {calculatePricing() && (
+                        <div className="bg-blue-50 p-4 rounded-md">
+                          <h5 className="font-medium mb-2 flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" />
+                            Pricing Results
+                          </h5>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Vendor Cost:</span>
+                              <span className="font-medium">
+                                {settings?.pricing?.currency}{" "}
+                                {calculatePricing()!.vendorPrice.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Profit Amount:</span>
+                              <span className="font-medium text-green-600">
+                                {settings?.pricing?.currency}{" "}
+                                {calculatePricing()!.profitAmount.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-base font-semibold">
+                              <span>Selling Price:</span>
+                              <span className="text-blue-600">
+                                {settings?.pricing?.currency}{" "}
+                                {calculatePricing()!.sellingPrice.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setPricingDialogOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={addProductWithCalculatedPrice}
+                          disabled={!vendorPrice || !profitMargin}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <DollarSign className="h-4 w-4 mr-2" />
+                          Add with Calculated Price
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </CardHeader>
@@ -375,7 +672,9 @@ export default function NewQuotationPage() {
                       <TableRow key={index}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{item.productName}</div>
+                            <div className="font-medium">
+                              {item.productName}
+                            </div>
                             <div className="text-sm text-gray-500">
                               {item.brand} {item.modelName}
                             </div>
@@ -388,7 +687,13 @@ export default function NewQuotationPage() {
                           <Input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "quantity",
+                                parseInt(e.target.value) || 1
+                              )
+                            }
                             className="w-20"
                             min="1"
                           />
@@ -397,7 +702,13 @@ export default function NewQuotationPage() {
                           <Input
                             type="number"
                             value={item.vendorCost}
-                            onChange={(e) => updateItem(index, 'vendorCost', parseFloat(e.target.value) || 0)}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "vendorCost",
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
                             className="w-24"
                             min="0"
                             step="0.01"
@@ -407,7 +718,13 @@ export default function NewQuotationPage() {
                           <Input
                             type="number"
                             value={item.profitMargin}
-                            onChange={(e) => updateItem(index, 'profitMargin', parseFloat(e.target.value) || 0)}
+                            onChange={(e) =>
+                              updateItem(
+                                index,
+                                "profitMargin",
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
                             className="w-20"
                             min="0"
                             step="0.1"
@@ -502,19 +819,26 @@ export default function NewQuotationPage() {
                   <span>Subtotal:</span>
                   <span>{subtotal.toFixed(2)} BDT</span>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Discount</Label>
                   <div className="flex space-x-2">
                     <Input
                       type="number"
                       value={discount}
-                      onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                      onChange={(e) =>
+                        setDiscount(parseFloat(e.target.value) || 0)
+                      }
                       className="flex-1"
                       min="0"
                       step="0.01"
                     />
-                    <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
+                    <Select
+                      value={discountType}
+                      onValueChange={(value: "percentage" | "fixed") =>
+                        setDiscountType(value)
+                      }
+                    >
                       <SelectTrigger className="w-20">
                         <SelectValue />
                       </SelectTrigger>
@@ -535,7 +859,9 @@ export default function NewQuotationPage() {
                   <Input
                     type="number"
                     value={taxRate}
-                    onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setTaxRate(parseFloat(e.target.value) || 0)
+                    }
                     min="0"
                     max="100"
                     step="0.1"
@@ -555,15 +881,41 @@ export default function NewQuotationPage() {
 
               {items.length > 0 && (
                 <div className="mt-4 p-3 bg-teal-50 rounded-lg">
-                  <div className="text-sm font-medium text-teal-800">Profit Analysis</div>
+                  <div className="text-sm font-medium text-teal-800">
+                    Profit Analysis
+                  </div>
                   <div className="text-xs text-teal-600 mt-1">
-                    Total Cost: {items.reduce((sum, item) => sum + (item.vendorCost * item.quantity), 0).toFixed(2)} BDT
+                    Total Cost:{" "}
+                    {items
+                      .reduce(
+                        (sum, item) => sum + item.vendorCost * item.quantity,
+                        0
+                      )
+                      .toFixed(2)}{" "}
+                    BDT
                   </div>
                   <div className="text-xs text-teal-600">
-                    Total Profit: {(grandTotal - items.reduce((sum, item) => sum + (item.vendorCost * item.quantity), 0)).toFixed(2)} BDT
+                    Total Profit:{" "}
+                    {(
+                      grandTotal -
+                      items.reduce(
+                        (sum, item) => sum + item.vendorCost * item.quantity,
+                        0
+                      )
+                    ).toFixed(2)}{" "}
+                    BDT
                   </div>
                   <div className="text-sm font-medium text-teal-800 mt-1">
-                    Avg Margin: {items.length > 0 ? (items.reduce((sum, item) => sum + item.profitMargin, 0) / items.length).toFixed(1) : 0}%
+                    Avg Margin:{" "}
+                    {items.length > 0
+                      ? (
+                          items.reduce(
+                            (sum, item) => sum + item.profitMargin,
+                            0
+                          ) / items.length
+                        ).toFixed(1)
+                      : 0}
+                    %
                   </div>
                 </div>
               )}
