@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steelroot Traders - Pipe Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            page-break-after: always;
+            position: relative;
+            padding: 15mm;
+        }
+
+        .page-header {
+            background: #666;
+            color: white;
+            padding: 10px 15px;
+            font-size: 24px;
+            font-weight: bold;
+            margin: -15mm -15mm 20px -15mm;
+        }
+
+        .section-title {
+            background: #888;
+            color: white;
+            padding: 8px 15px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .pipe-info {
+            margin-bottom: 20px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .conversion-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .conversion-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2E4BC6;
+        }
+
+        .pipe-diagrams {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .pipe-diagram {
+            text-align: center;
+        }
+
+        .pipe-circle {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #2E4BC6;
+            border-radius: 50%;
+            margin: 0 auto 5px;
+            position: relative;
+        }
+
+        .pipe-circle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #00B4A6;
+            border-radius: 50%;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-table th {
+            background: #2E4BC6;
+            color: white;
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid #fff;
+            font-weight: bold;
+        }
+
+        .schedule-table td {
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .schedule-table tr:hover {
+            background: #e3f2fd;
+        }
+
+        .nominal-size {
+            background: #fff3cd !important;
+            font-weight: bold;
+        }
+
+        .metric-note {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+
+        .orange-header {
+            background: #fd7e14;
+            color: white;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 10px 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            right: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: #2E4BC6;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="page-header">Pipe Basic</div>
+        <div class="section-title">What is Pipe Schedule?</div>
+        
+        <div class="pipe-info">
+            A pipe schedule (SCH) is a measure of a steel pipe's nominal wall thickness.
+        </div>
+        
+        <div class="conversion-box">
+            <div class="conversion-title">Metric Rules-of-Thumb</div>
+            <div>1 mm = about 1/25 inch = thickness of a dime</div>
+            <div>25 mm = about 1 inch (1" = 25.4 mm)</div>
+            <div>300 mm = about 1 foot (12" = 304.8 mm)</div>
+            <div>1 m² = roughly 10 sq. ft. (1 m² = 10.76 sq. ft.)</div>
+            <div>1 L = about 1 quart (1 L = 1.06 qt.)</div>
+            <div>1 kg = about 2.2 pounds</div>
+            <div>100 kg = 1 Mg = 1 metric ton = about 2200 lbs.</div>
+        </div>
+        
+        <div class="pipe-diagrams">
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">For NPS 1/8 to 12</div>
+                <div style="font-size: 9px;">Nominal Pipe Size</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Outside Diameter</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Inside Diameter</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Wall Thickness</div>
+            </div>
+        </div>
+        
+        <div class="pipe-diagrams">
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">For NPS 14 and above</div>
+                <div style="font-size: 9px;">Nominal Pipe Size</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Outside Diameter</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Inside Diameter</div>
+            </div>
+            <div class="pipe-diagram">
+                <div class="pipe-circle"></div>
+                <div style="font-size: 10px;">Wall Thickness</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; margin-top: 20px;">
+            <table class="schedule-table" style="flex: 1; margin-right: 10px;">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Nominal pipe<br>size<br>NPS</th>
+                        <th rowspan="2">OD<br>mm</th>
+                        <th colspan="13">Schedule Numbers</th>
+                        <th rowspan="2">Weighing<br>kg/m</th>
+                    </tr>
+                    <tr>
+                        <th>20</th>
+                        <th>30</th>
+                        <th>STD</th>
+                        <th>40</th>
+                        <th>60</th>
+                        <th>XS</th>
+                        <th>80</th>
+                        <th>100</th>
+                        <th>120</th>
+                        <th>140</th>
+                        <th>160</th>
+                        <th>XXS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="nominal-size">
+                        <td>15<br>1/2</td>
+                        <td>21.3</td>
+                        <td></td>
+                        <td>2.77</td>
+                        <td>2.77</td>
+                        <td></td>
+                        <td>3.73</td>
+                        <td>3.73</td>
+                        <td></td>
+                        <td></td>
+                        <td>4.78</td>
+                        <td>7.47</td>
+                        <td>0.0004</td>
+                    </tr>
+                    <tr>
+                        <td>20<br>3/4</td>
+                        <td>26.7</td>
+                        <td></td>
+                        <td>2.87</td>
+                        <td>2.87</td>
+                        <td></td>
+                        <td>3.91</td>
+                        <td>3.91</td>
+                        <td></td>
+                        <td></td>
+                        <td>5.56</td>
+                        <td>7.82</td>
+                        <td>0.0007</td>
+                    </tr>
+                    <tr class="nominal-size">
+                        <td>25<br>1</td>
+                        <td>33.4</td>
+                        <td></td>
+                        <td>3.38</td>
+                        <td>3.38</td>
+                        <td></td>
+                        <td>4.55</td>
+                        <td>4.55</td>
+                        <td></td>
+                        <td></td>
+                        <td>6.35</td>
+                        <td>9.09</td>
+                        <td>0.0011</td>
+                    </tr>
+                    <tr>
+                        <td>32<br>1 1/4</td>
+                        <td>42.2</td>
+                        <td></td>
+                        <td>3.56</td>
+                        <td>3.56</td>
+                        <td></td>
+                        <td>4.85</td>
+                        <td>4.85</td>
+                        <td></td>
+                        <td></td>
+                        <td>6.35</td>
+                        <td>9.70</td>
+                        <td>0.0017</td>
+                    </tr>
+                    <tr class="nominal-size">
+                        <td>40<br>1 1/2</td>
+                        <td>48.3</td>
+                        <td></td>
+                        <td>3.68</td>
+                        <td>3.68</td>
+                        <td></td>
+                        <td>5.08</td>
+                        <td>5.08</td>
+                        <td></td>
+                        <td></td>
+                        <td>7.14</td>
+                        <td>9.60</td>
+                        <td>0.023</td>
+                    </tr>
+                    <tr>
+                        <td>50<br>2</td>
+                        <td>60.3</td>
+                        <td></td>
+                        <td>3.91</td>
+                        <td>3.91</td>
+                        <td></td>
+                        <td>5.54</td>
+                        <td>5.54</td>
+                        <td></td>
+                        <td></td>
+                        <td>8.74</td>
+                        <td>11.07</td>
+                        <td>0.036</td>
+                    </tr>
+                    <tr class="nominal-size">
+                        <td>65<br>2 1/2</td>
+                        <td>73.0</td>
+                        <td></td>
+                        <td>5.16</td>
+                        <td>5.16</td>
+                        <td></td>
+                        <td>7.01</td>
+                        <td>7.01</td>
+                        <td></td>
+                        <td></td>
+                        <td>9.53</td>
+                        <td>14.02</td>
+                        <td>0.053</td>
+                    </tr>
+                    <tr>
+                        <td>80<br>3</td>
+                        <td>88.9</td>
+                        <td></td>
+                        <td>5.49</td>
+                        <td>5.49</td>
+                        <td></td>
+                        <td>7.62</td>
+                        <td>7.62</td>
+                        <td></td>
+                        <td></td>
+                        <td>11.13</td>
+                        <td>15.24</td>
+                        <td>0.079</td>
+                    </tr>
+                    <tr class="nominal-size">
+                        <td>90<br>3 1/2</td>
+                        <td>101.6</td>
+                        <td></td>
+                        <td>5.74</td>
+                        <td>5.74</td>
+                        <td></td>
+                        <td>8.08</td>
+                        <td>8.08</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>0.0103</td>
+                    </tr>
+                    <tr>
+                        <td>100<br>4</td>
+                        <td>114.3</td>
+                        <td></td>
+                        <td>6.02</td>
+                        <td>6.02</td>
+                        <td></td>
+                        <td>8.56</td>
+                        <td>8.56</td>
+                        <td>11.13</td>
+                        <td></td>
+                        <td>13.49</td>
+                        <td>17.12</td>
+                        <td>0.0130</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="orange-header">
+                Pipe Schedules (according to ASME/ANSI B36.10M)
+            </div>
+        </div>
+        
+        <div class="metric-note">
+            <strong>SI Units (Metric)</strong><br>
+            OD = mm<br>
+            Wall thickness = mm<br>
+            Weight = kg/m (plain end mass)
+        </div>
+        
+        <div class="page-footer">
+            <div>📍 Industrial Equipment's CATALOG 📱 +8801781748034 📧 steelroottraders@gmail.com</div>
+        </div>
+        <div class="page-number">9</div>
+    </div>
+</body>
+</html>

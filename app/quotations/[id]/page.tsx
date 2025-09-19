@@ -509,7 +509,7 @@ export default function QuotationDetailPage() {
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
       const termsText =
-        quotation.terms || "50% Advance with Work order, rest after delivery";
+        quotation.paymentTerms || "50% Advance with Work order, rest after delivery";
       pdf.text(termsText, margin, currentY);
       currentY += 8;
 
@@ -609,7 +609,11 @@ export default function QuotationDetailPage() {
             <Badge className={getStatusColor(quotation.status)}>
               {quotation.status.toUpperCase()}
             </Badge>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push(`/quotations/${quotationId}/edit`)}
+            >
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </Button>
@@ -852,13 +856,22 @@ export default function QuotationDetailPage() {
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => router.push(`/quotations/${quotationId}/edit`)}
+              >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Quotation
               </Button>
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+              >
                 <Download className="w-4 h-4 mr-2" />
-                Download PDF
+                {isGeneratingPDF ? "Generating..." : "Download PDF"}
               </Button>
               <Button className="w-full">
                 <Send className="w-4 h-4 mr-2" />

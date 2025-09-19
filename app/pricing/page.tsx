@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, TrendingUp, DollarSign, BarChart3, AlertCircle, CheckCircle } from 'lucide-react';
 import { PricingCalculator, VendorComparison, INDUSTRY_MARGINS, DEFAULT_BULK_DISCOUNTS } from '@/lib/pricing';
+import PricingAnalyticsDashboard from '@/components/pricing/PricingAnalyticsDashboard';
 
 interface Product {
   _id: string;
@@ -124,16 +125,28 @@ export default function PricingPage() {
     const profitMargin = parseFloat(customProfitMargin);
     if (isNaN(profitMargin)) return;
     
-    const vendorPricesWithNames = selectedProductData.vendorPrices.map(vp => ({
-      ...vp,
-      vendorName: vp.vendor.companyName
-    }));
-    
-    const comparisons = PricingCalculator.compareVendorPrices(
-      vendorPricesWithNames,
-      profitMargin,
-      settings?.pricing?.roundPrices ?? true
-    );
+    // Create a simplified comparison for display
+    const comparisons = selectedProductData.vendorPrices.map((vp, index) => {
+      const sellingPrice = vp.price * (1 + profitMargin / 100);
+      const isLowest = vp.price === Math.min(...selectedProductData.vendorPrices.map(v => v.price));
+      const lowestPrice = Math.min(...selectedProductData.vendorPrices.map(v => v.price));
+      const savings = isLowest ? 0 : vp.price - lowestPrice;
+      
+      return {
+        vendorId: vp.vendor._id,
+        vendorName: vp.vendor.companyName,
+        price: vp.price,
+        currency: vp.currency,
+        sellingPrice: Math.round(sellingPrice),
+        deliveryTime: vp.deliveryTime,
+        minimumQuantity: vp.minimumQuantity,
+        validUntil: vp.validUntil,
+        profitMargin,
+        isLowest,
+        isBestValue: isLowest, // Simplified logic
+        savings
+      };
+    }).sort((a, b) => a.price - b.price);
     
     setVendorComparisons(comparisons);
   };
@@ -176,11 +189,12 @@ export default function PricingPage() {
       </div>
 
       <Tabs defaultValue="calculator" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="calculator">Price Calculator</TabsTrigger>
           <TabsTrigger value="vendors">Vendor Comparison</TabsTrigger>
           <TabsTrigger value="bulk">Bulk Pricing</TabsTrigger>
           <TabsTrigger value="competitive">Market Analysis</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="calculator" className="space-y-6">
@@ -484,6 +498,12 @@ export default function PricingPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <PricingAnalyticsDashboard 
+            productId={selectedProduct || undefined}
+          />
         </TabsContent>
       </Tabs>
     </div>

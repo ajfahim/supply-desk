@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steelroot Traders - Product Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            page-break-after: always;
+            position: relative;
+        }
+
+        .page-header {
+            background: #666;
+            color: white;
+            padding: 8px 15px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .subcategory-header {
+            background: #888;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            padding: 15px;
+        }
+
+        .product-item {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+            background: white;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 70px;
+            background: #f8f9fa;
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #999;
+        }
+
+        .product-name {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .product-code {
+            font-size: 8px;
+            color: #666;
+            margin-top: auto;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            right: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: #2E4BC6;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .side-nav {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 12mm;
+            height: 100%;
+            background: #666;
+            color: white;
+            font-size: 7px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 6px 3px;
+            border-bottom: 1px solid #555;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            background: #2E4BC6;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fire Safety Equipment Page -->
+    <div class="page">
+        <div class="page-header">Fire Safety Equipments</div>
+        <div class="subcategory-header">Fire Safety (UL Certified)</div>
+        
+        <div class="product-grid">
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Horizontal Split Case Pump</div>
+                <div class="product-code">HFS-101</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Centrifugal Diesel Engine</div>
+                <div class="product-code">HFS-102</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">UL Listed Fire Pump (Turbine)</div>
+                <div class="product-code">HFS-103</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Foot Valve</div>
+                <div class="product-code">HFS-104</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Brigade Connection</div>
+                <div class="product-code">HFS-105</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Anti-Vortex Plate</div>
+                <div class="product-code">HFS-106</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Y-Strainer</div>
+                <div class="product-code">HFS-107</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">OS & Y Gate Valve</div>
+                <div class="product-code">HFS-108</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Alarm Check Valve Assembly</div>
+                <div class="product-code">HFS-109</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Zone Control Valve</div>
+                <div class="product-code">HFS-110</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Pressure Relief Valve</div>
+                <div class="product-code">HFS-111</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Flow Meter</div>
+                <div class="product-code">HFS-112</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Flexible Joint</div>
+                <div class="product-code">HFS-113</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Non Return Valve</div>
+                <div class="product-code">HFS-114</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Ball Valve</div>
+                <div class="product-code">HFS-115</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Pressure Gauge</div>
+                <div class="product-code">HFS-116</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Tamper Switch</div>
+                <div class="product-code">HFS-117</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Pressure Switch</div>
+                <div class="product-code">HFS-118</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Water Flow Switch</div>
+                <div class="product-code">HFS-119</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Auto Air Vent</div>
+                <div class="product-code">HFS-120</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Hose Cabinet Box</div>
+                <div class="product-code">HFS-121</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Hose Reel Assembly</div>
+                <div class="product-code">HFS-122</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Landing Valve</div>
+                <div class="product-code">HFS-123</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Pillar Hydrant</div>
+                <div class="product-code">HFS-124</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Upright Sprinkler</div>
+                <div class="product-code">HFS-125</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Recessed Pendant Sprinkler</div>
+                <div class="product-code">HFS-126</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Horizontal Sidewall Sprinkler</div>
+                <div class="product-code">HFS-127</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Mechanical Tee/Threaded Outlet</div>
+                <div class="product-code">HFS-128</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Grooved Flexible Coupling For Grooved End Pipe Fitting</div>
+                <div class="product-code">HFS-129</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Elbow 90 deg Grooved Type</div>
+                <div class="product-code">HFS-130</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Grooved Tee</div>
+                <div class="product-code">HFS-131</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Grooved Type Reducer</div>
+                <div class="product-code">HFS-132</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Door</div>
+                <div class="product-code">HFS-133</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Door Closer</div>
+                <div class="product-code">HFS-134</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Panic Bar</div>
+                <div class="product-code">HFS-135</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Magnetic Door Holder</div>
+                <div class="product-code">HFS-136</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Door Hinges</div>
+                <div class="product-code">HFS-137</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Door Coordinator</div>
+                <div class="product-code">HFS-138</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Trim Lock</div>
+                <div class="product-code">HFS-139</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Alarm Control Panel</div>
+                <div class="product-code">HFS-140</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Smoke Detector</div>
+                <div class="product-code">HFS-141</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Heat Detector</div>
+                <div class="product-code">HFS-142</div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <div>📍 Industrial Equipment's CATALOG 📱 +8801781748034 📧 steelroottraders@gmail.com</div>
+        </div>
+        <div class="page-number">2</div>
+        
+        <div class="side-nav">
+            <div class="nav-item active">Fire Safety</div>
+            <div class="nav-item">Utilities</div>
+            <div class="nav-item">Sheet & Steel</div>
+            <div class="nav-item">Electro Mechanical</div>
+            <div class="nav-item">Lubricant</div>
+            <div class="nav-item">Measuring & Pneumatic</div>
+            <div class="nav-item">Ventilation</div>
+            <div class="nav-item">Smoke Management</div>
+            <div class="nav-item">Renewable Energy</div>
+            <div class="nav-item">Audio Sound</div>
+            <div class="nav-item">Electric Items</div>
+        </div>
+    </div>
+
+    <!-- Fire Safety Equipment & Utilities Page -->
+    <div class="page">
+        <div class="page-header">Fire Safety Equipments | Utilities (Process & Water)</div>
+        <div class="subcategory-header">Fire Safety (UL Certified)</div>
+        
+        <div class="product-grid">
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Multi Detector</div>
+                <div class="product-code">HFS-143</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Manual Call Point</div>
+                <div class="product-code">HFS-144</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Isolator Module</div>
+                <div class="product-code">HFS-145</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Input/Output Module</div>
+                <div class="product-code">HFS-146</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Sounder Horn</div>
+                <div class="product-code">HFS-147</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Sounder Cum Strobe</div>
+                <div class="product-code">HFS-148</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Reflective Beam Detector</div>
+                <div class="product-code">HFS-149</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Proof Cable</div>
+                <div class="product-code">HFS-150</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Extinguisher</div>
+                <div class="product-code">HFS-151</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Ball</div>
+                <div class="product-code">HFS-152</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Emergency Light</div>
+                <div class="product-code">HFS-153</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Exit Sign</div>
+                <div class="product-code">HFS-154</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire and Smoke Damper</div>
+                <div class="product-code">HFS-155</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Rolling Shutter</div>
+                <div class="product-code">HFS-156</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Intumescent Paint</div>
+                <div class="product-code">HFS-157</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Resistive Paint</div>
+                <div class="product-code">HFS-158</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Fire Suppression System</div>
+                <div class="product-code">HFS-159</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">🔥</div>
+                <div class="product-name">Foam Suppression System</div>
+                <div class="product-code">HFS-160</div>
+            </div>
+        </div>
+        
+        <div class="subcategory-header">Process Utilities</div>
+        
+        <div class="product-grid">
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Seamless Pipe</div>
+                <div class="product-code">HPU-201</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">SS Pipe</div>
+                <div class="product-code">HPU-202</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">ERW Pipe</div>
+                <div class="product-code">HPU-203</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">API Pipe</div>
+                <div class="product-code">HPU-204</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">CS Pipe</div>
+                <div class="product-code">HPU-205</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Filter</div>
+                <div class="product-code">HPU-206</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Globe Valve</div>
+                <div class="product-code">HPU-207</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Piston Valve</div>
+                <div class="product-code">HPU-208</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Needle Valve</div>
+                <div class="product-code">HPU-209</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Rubber Expansion Joint</div>
+                <div class="product-code">HPU-210</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Diaphragm Valve</div>
+                <div class="product-code">HPU-211</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Butterfly Valve</div>
+                <div class="product-code">HPU-212</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Pinch Valve</div>
+                <div class="product-code">HPU-213</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Gate Valve</div>
+                <div class="product-code">HPU-214</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Ball Valve</div>
+                <div class="product-code">HPU-215</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Knife gate Valve</div>
+                <div class="product-code">HPU-216</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Check Valve</div>
+                <div class="product-code">HPU-217</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Hydraulic Butterfly Valve</div>
+                <div class="product-code">HPU-218</div>
+            </div>
+            
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Pressure Relief Valve</div>
+                <div class="product-code">HPU-219</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Pneumatic Steam Control Valve</div>
+                <div class="product-code">HPU-220</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">S.S Expansion Joint</div>
+                <div class="product-code">HPU-221</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Side Entry or Split Body Valve</div>
+                <div class="product-code">HPU-222</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Double Offset Butterfly Valve</div>
+                <div class="product-code">HPU-223</div>
+            </div>
+            <div class="product-item">
+                <div class="product-image">⚙️</div>
+                <div class="product-name">Triple Offset Butterfly Valve</div>
+                <div class="product-code">HPU-224</div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <div>📧 steelroottraders@gmail.com 📱 +8801781748034 📍 Industrial Equipment's CATALOG</div>
+        </div>
+        <div class="page-number">3</div>
+        
+        <div class="side-nav">
+            <div class="nav-item">Fire Safety</div>
+            <div class="nav-item active">Utilities</div>
+            <div class="nav-item">Sheet & Steel</div>
+            <div class="nav-item">Electro Mechanical</div>
+            <div class="nav-item">Lubricant</div>
+            <div class="nav-item">Measuring & Pneumatic</div>
+            <div class="nav-item">Ventilation</div>
+            <div class="nav-item">Smoke Management</div>
+            <div class="nav-item">Renewable Energy</div>
+            <div class="nav-item">Audio Sound</div>
+            <div class="nav-item">Electric Items</div>
+        </div>
+    </div>
+</body>
+</html>

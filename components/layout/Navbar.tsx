@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { 
-  Menu, 
-  FileText, 
-  Users, 
-  Package, 
-  Building2, 
-  BarChart3, 
-  Settings,
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  BarChart3,
+  Building2,
+  Calculator,
+  FileText,
+  Menu,
+  Package,
   Plus,
-  Calculator
-} from 'lucide-react';
+  Settings,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: BarChart3 },
-  { name: 'Quotations', href: '/quotations', icon: FileText },
-  { name: 'Products', href: '/products', icon: Package },
-  { name: 'Clients', href: '/clients', icon: Users },
-  { name: 'Vendors', href: '/vendors', icon: Building2 },
-  { name: 'Pricing', href: '/pricing', icon: Calculator },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Quotations", href: "/quotations", icon: FileText },
+  { name: "Products", href: "/products", icon: Package },
+  { name: "Clients", href: "/clients", icon: Users },
+  { name: "Vendors", href: "/vendors", icon: Building2 },
+  { name: "Pricing", href: "/pricing", icon: Calculator },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function Navbar() {
@@ -42,17 +42,19 @@ export default function Navbar() {
                 alt="Steelroot Traders"
                 width={40}
                 height={40}
-                className="h-10 w-auto"
+                className="h-15 w-auto"
               />
               <div className="hidden sm:block">
                 <div className="text-xl font-bold text-blue-900">STEELROOT</div>
-                <div className="text-xs text-teal-600 font-medium tracking-wider">TRADERS</div>
+                <div className="text-xs text-teal-600 font-medium tracking-wider">
+                  TRADERS
+                </div>
               </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -98,8 +100,12 @@ export default function Navbar() {
                       className="h-8 w-auto"
                     />
                     <div>
-                      <div className="text-lg font-bold text-blue-900">STEELROOT</div>
-                      <div className="text-xs text-teal-600 font-medium tracking-wider">TRADERS</div>
+                      <div className="text-lg font-bold text-blue-900">
+                        STEELROOT
+                      </div>
+                      <div className="text-xs text-teal-600 font-medium tracking-wider">
+                        TRADERS
+                      </div>
                     </div>
                   </div>
 
@@ -121,7 +127,10 @@ export default function Navbar() {
 
                   {/* Mobile Quick Action */}
                   <div className="px-4 pt-4 border-t">
-                    <Link href="/quotations/new" onClick={() => setIsOpen(false)}>
+                    <Link
+                      href="/quotations/new"
+                      onClick={() => setIsOpen(false)}
+                    >
                       <Button className="w-full bg-blue-600 hover:bg-blue-700">
                         <Plus className="w-4 h-4 mr-2" />
                         New Quotation

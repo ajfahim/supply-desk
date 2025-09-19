@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steelroot Traders - Back Cover</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            position: relative;
+            padding: 30px;
+        }
+
+        .back-cover {
+            background: white;
+            height: 100%;
+            position: relative;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+
+        .company-logo {
+            width: 100px;
+            height: 100px;
+            background: #2E4BC6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .company-logo::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #00B4A6;
+            border-radius: 50%;
+        }
+
+        .qr-section {
+            text-align: right;
+        }
+
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            background: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        .contact-info {
+            margin-top: 50px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .contact-icon {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+
+        .social-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+        }
+
+        .social-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .distributed-section {
+            position: absolute;
+            right: 30px;
+            top: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            width: 200px;
+        }
+
+        .distributed-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2E4BC6;
+        }
+
+        .distributor-box {
+            border: 2px solid #ddd;
+            height: 100px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .tagline-section {
+            position: absolute;
+            bottom: 150px;
+            left: 30px;
+            right: 30px;
+            text-align: center;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #fd7e14;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .notice-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .notice-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .qr-bottom {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .qr-small {
+            width: 60px;
+            height: 60px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 8px;
+        }
+
+        .geometric-shapes {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 200px;
+            opacity: 0.3;
+        }
+
+        .shape {
+            position: absolute;
+            background: #00B4A6;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20px;
+            right: 20px;
+        }
+
+        .shape:nth-child(2) {
+            width: 60px;
+            height: 120px;
+            bottom: 0;
+            right: 120px;
+            background: #2E4BC6;
+        }
+
+        .shape:nth-child(3) {
+            width: 100px;
+            height: 60px;
+            bottom: 60px;
+            right: 0;
+            background: #fd7e14;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page back-cover">
+        <div class="header-section">
+            <div class="company-logo">
+                STEELROOT
+            </div>
+            
+            <div class="qr-section">
+                <div>Scan the QR Code</div>
+                <div>to view the Website.</div>
+                <div class="qr-code">QR</div>
+            </div>
+        </div>
+        
+        <div class="contact-info">
+            <div class="contact-item">
+                <div class="contact-icon">🏢</div>
+                <div>
+                    <strong>109, Nawabpur, Wari</strong><br>
+                    Dhaka, Bangladesh
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">📱</div>
+                <div>+8801781748034</div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">✉️</div>
+                <div>steelroottraders@gmail.com</div>
+            </div>
+        </div>
+        
+        <div class="social-section">
+            <div class="social-item">
+                <div style="margin-right: 10px;">📘</div>
+                <div>Contact us on WhatsApp<br>+8801781748034</div>
+            </div>
+        </div>
+        
+        <div class="distributed-section">
+            <div class="distributed-title">Distributed By:</div>
+            <div class="distributor-box">
+                [Distributor Logo/Info]
+            </div>
+            <div class="distributor-box">
+                [Distributor Logo/Info]
+            </div>
+        </div>
+        
+        <div class="tagline-section">
+            <div class="tagline">We Supply Quality, through our equipment.</div>
+            
+            <div class="notice-section">
+                <div class="notice-title">Notice:</div>
+                <div>
+                    All content Available in this catalogue is believed to be accurate at the time of printing. 
+                    Specification for products are subject to change without notice and STEELROOT TRADERS reserves the 
+                    right to make changes without notice to processing materials or configuration.
+                </div>
+            </div>
+        </div>
+        
+        <div class="qr-bottom">
+            <div class="qr-small">QR</div>
+            <div style="font-size: 10px;">
+                Scan the QR Code to view<br>
+                the catalogue digitally
+            </div>
+        </div>
+        
+        <div class="geometric-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 "use client";
 
+import VendorPriceComparison from "@/components/pricing/VendorPriceComparison";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,9 +29,13 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { PricingCalculator } from "@/lib/pricing";
+import { PricingRecommendationEngine } from "@/lib/pricing-recommendations";
 import {
+  AlertTriangle,
+  Award,
   Calculator,
   DollarSign,
+  Lightbulb,
   Plus,
   Search,
   Trash2,
@@ -61,10 +66,16 @@ interface Product {
     vendor: {
       _id: string;
       companyName: string;
+      reliability?: number;
+      deliveryTime?: string;
+      paymentTerms?: string;
     };
     price: number;
     currency: string;
+    validUntil?: string;
+    minimumQuantity?: number;
     deliveryTime: string;
+    lastUpdated?: string;
   }>;
 }
 
@@ -103,6 +114,12 @@ export default function NewQuotationPage() {
   const [vendorPrice, setVendorPrice] = useState("");
   const [profitMargin, setProfitMargin] = useState("25");
   const [settings, setSettings] = useState<any>(null);
+  const [showPriceComparison, setShowPriceComparison] = useState(false);
+  const [selectedProductForComparison, setSelectedProductForComparison] =
+    useState<Product | null>(null);
+  const [optimizationSuggestions, setOptimizationSuggestions] = useState<any[]>(
+    []
+  );
 
   // Form fields
   const [validUntil, setValidUntil] = useState("");
@@ -124,6 +141,48 @@ export default function NewQuotationPage() {
     defaultDate.setDate(defaultDate.getDate() + 30);
     setValidUntil(defaultDate.toISOString().split("T")[0]);
   }, []);
+
+  useEffect(() => {
+    // Generate optimization suggestions when items change
+    if (items.length > 0) {
+      const suggestions =
+        PricingRecommendationEngine.generateQuotationOptimizationSuggestions(
+          items.map((item) => {
+            const product = products.find((p) => p._id === item.product);
+            return {
+              product: item.product,
+              productName: item.productName,
+              quantity: item.quantity,
+              selectedVendor: item.selectedVendor,
+              vendorCost: item.vendorCost,
+              vendorPrices:
+                product?.vendorPrices?.map((vp) => ({
+                  vendor: {
+                    _id: vp.vendor._id,
+                    companyName: vp.vendor.companyName,
+                    reliability: vp.vendor.reliability || 3,
+                    deliveryTime: vp.vendor.deliveryTime || "",
+                    paymentTerms: vp.vendor.paymentTerms || "",
+                  },
+                  price: vp.price,
+                  currency: vp.currency,
+                  validUntil: vp.validUntil
+                    ? new Date(vp.validUntil)
+                    : new Date(),
+                  minimumQuantity: vp.minimumQuantity || 1,
+                  deliveryTime: vp.deliveryTime,
+                  lastUpdated: vp.lastUpdated
+                    ? new Date(vp.lastUpdated)
+                    : new Date(),
+                })) || [],
+            };
+          })
+        );
+      setOptimizationSuggestions(suggestions);
+    } else {
+      setOptimizationSuggestions([]);
+    }
+  }, [items, products]);
 
   const fetchClientsAndProducts = async () => {
     try {
@@ -156,6 +215,77 @@ export default function NewQuotationPage() {
       setVendorPrice(product.vendorPrices[0].price.toString());
     }
     setPricingDialogOpen(true);
+  };
+
+  const openPriceComparison = (product: Product) => {
+    setSelectedProductForComparison(product);
+    setShowPriceComparison(true);
+  };
+
+  const convertProductForComparison = (product: Product) => {
+    return {
+      ...product,
+      vendorPrices: product.vendorPrices.map((vp) => ({
+        vendor: {
+          _id: vp.vendor._id,
+          companyName: vp.vendor.companyName,
+          reliability: vp.vendor.reliability || 3,
+          deliveryTime: vp.vendor.deliveryTime || "",
+          paymentTerms: vp.vendor.paymentTerms || "",
+        },
+        price: vp.price,
+        currency: vp.currency,
+        validUntil: vp.validUntil ? new Date(vp.validUntil) : new Date(),
+        minimumQuantity: vp.minimumQuantity || 1,
+        deliveryTime: vp.deliveryTime,
+        lastUpdated: vp.lastUpdated ? new Date(vp.lastUpdated) : new Date(),
+      })),
+    };
+  };
+
+  const handleVendorPriceSelect = (vendorPrice: any) => {
+    if (!selectedProductForComparison) return;
+
+    const newItem: QuotationItem = {
+      product: selectedProductForComparison._id,
+      productName: selectedProductForComparison.name,
+      brand: selectedProductForComparison.brand,
+      modelName: selectedProductForComparison.modelName,
+      quantity: 1,
+      unit: selectedProductForComparison.unit,
+      selectedVendor: vendorPrice.vendor._id,
+      vendorName: vendorPrice.vendor.companyName,
+      vendorCost: vendorPrice.price,
+      vendorCurrency: vendorPrice.currency,
+      profitMargin: 20,
+      sellingPrice: vendorPrice.price * 1.2,
+      lineTotal: vendorPrice.price * 1.2,
+      deliveryTime: vendorPrice.deliveryTime,
+      warranty: "",
+      notes: "",
+    };
+
+    setItems([...items, newItem]);
+    setShowPriceComparison(false);
+    setSelectedProductForComparison(null);
+  };
+
+  const applyOptimizationSuggestion = (suggestion: any) => {
+    const updatedItems = [...items];
+    const item = updatedItems[suggestion.itemIndex];
+
+    item.selectedVendor = suggestion.recommendedVendor.vendor._id;
+    item.vendorName = suggestion.recommendedVendor.vendor.companyName;
+    item.vendorCost = suggestion.recommendedVendor.price;
+    item.vendorCurrency = suggestion.recommendedVendor.currency;
+    item.deliveryTime = suggestion.recommendedVendor.deliveryTime;
+
+    // Recalculate prices
+    const marginMultiplier = 1 + item.profitMargin / 100;
+    item.sellingPrice = item.vendorCost * marginMultiplier;
+    item.lineTotal = item.sellingPrice * item.quantity;
+
+    setItems(updatedItems);
   };
 
   const calculatePricing = () => {
@@ -318,6 +448,35 @@ export default function NewQuotationPage() {
         product.modelName?.toLowerCase().includes(productSearch.toLowerCase())
     ) || [];
 
+  // Group products and show only unique products with lowest price vendor
+  const uniqueProductsWithBestPrice = filteredProducts.reduce(
+    (acc, product) => {
+      const existingProduct = acc.find(
+        (p) =>
+          p.name === product.name &&
+          p.brand === product.brand &&
+          p.modelName === product.modelName
+      );
+
+      if (!existingProduct) {
+        // Find the lowest price vendor for this product
+        const lowestPriceVendor =
+          product.vendorPrices.length > 0
+            ? product.vendorPrices.reduce((lowest, current) =>
+                current.price < lowest.price ? current : lowest
+              )
+            : null;
+
+        acc.push({
+          ...product,
+          lowestPriceVendor,
+        });
+      }
+      return acc;
+    },
+    [] as (Product & { lowestPriceVendor: any })[]
+  );
+
   const selectedClientData = clients?.find((c) => c._id === selectedClient);
 
   return (
@@ -414,7 +573,7 @@ export default function NewQuotationPage() {
                     Add Product
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="min-w-[40vw] overflow-auto overflow-x-hidden">
+                <DialogContent className="min-w-[50vw] overflow-auto overflow-x-hidden">
                   <DialogHeader>
                     <DialogTitle>Select Product</DialogTitle>
                   </DialogHeader>
@@ -441,70 +600,98 @@ export default function NewQuotationPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredProducts.length > 0 ? (
-                            filteredProducts.map((product) =>
-                              product.vendorPrices.map(
-                                (vendor, vendorIndex) => (
-                                  <TableRow
-                                    key={`${product._id}-${vendorIndex}`}
+                          {uniqueProductsWithBestPrice.length > 0 ? (
+                            uniqueProductsWithBestPrice.map((product) => (
+                              <TableRow key={product._id}>
+                                <TableCell className="w-[25%]">
+                                  <div
+                                    className="font-medium truncate"
+                                    title={product.name}
                                   >
-                                    <TableCell className="w-[25%]">
-                                      <div
-                                        className="font-medium truncate"
-                                        title={product.name}
-                                      >
-                                        {product.name}
+                                    {product.name}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="w-[20%]">
+                                  <div
+                                    className="truncate"
+                                    title={`${product.brand} ${product.modelName}`}
+                                  >
+                                    {product.brand} {product.modelName}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="w-[20%]">
+                                  <div className="flex flex-col">
+                                    <div
+                                      className="truncate font-medium"
+                                      title={
+                                        product.lowestPriceVendor?.vendor
+                                          .companyName
+                                      }
+                                    >
+                                      {product.lowestPriceVendor?.vendor
+                                        .companyName || "No vendor"}
+                                    </div>
+                                    {product.vendorPrices.length > 1 && (
+                                      <div className="text-xs text-gray-500">
+                                        +{product.vendorPrices.length - 1} more
+                                        vendor
+                                        {product.vendorPrices.length > 2
+                                          ? "s"
+                                          : ""}
                                       </div>
-                                    </TableCell>
-                                    <TableCell className="w-[20%]">
-                                      <div
-                                        className="truncate"
-                                        title={`${product.brand} ${product.modelName}`}
-                                      >
-                                        {product.brand} {product.modelName}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="w-[20%]">
-                                      <div
-                                        className="truncate"
-                                        title={vendor.vendor.companyName}
-                                      >
-                                        {vendor.vendor.companyName}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="w-[15%]">
-                                      <div className="font-medium">
-                                        {vendor.price.toLocaleString()}{" "}
-                                        {vendor.currency}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="w-[20%]">
-                                      <div className="flex gap-2">
-                                        <Button
-                                          size="sm"
-                                          onClick={() =>
-                                            addProduct(product, vendorIndex)
-                                          }
-                                          className="bg-blue-600 hover:bg-blue-700"
-                                        >
-                                          Add
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() =>
-                                            openPricingCalculator(product)
-                                          }
-                                          className="flex items-center gap-1"
-                                        >
-                                          <Calculator className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                )
-                              )
-                            )
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="w-[15%]">
+                                  <div className="flex flex-col">
+                                    <div className="font-medium text-green-600">
+                                      {product.lowestPriceVendor?.price.toLocaleString() ||
+                                        "N/A"}{" "}
+                                      {product.lowestPriceVendor?.currency ||
+                                        ""}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Lowest price
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="w-[20%]">
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        if (product.lowestPriceVendor) {
+                                          const vendorIndex =
+                                            product.vendorPrices.findIndex(
+                                              (vp) =>
+                                                vp.vendor._id ===
+                                                product.lowestPriceVendor.vendor
+                                                  ._id
+                                            );
+                                          addProduct(product, vendorIndex);
+                                        }
+                                      }}
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                      disabled={!product.lowestPriceVendor}
+                                    >
+                                      Add Best
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        openPriceComparison(product)
+                                      }
+                                      className="flex items-center gap-1"
+                                      title="Compare all vendor prices"
+                                    >
+                                      <Award className="h-3 w-3" />
+                                      Compare
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
                           ) : (
                             <TableRow>
                               <TableCell
@@ -652,6 +839,35 @@ export default function NewQuotationPage() {
                   )}
                 </DialogContent>
               </Dialog>
+
+              {/* Vendor Price Comparison Dialog */}
+              <Dialog
+                open={showPriceComparison}
+                onOpenChange={setShowPriceComparison}
+              >
+                <DialogContent className="min-w-[50vw] max-h-[95vh] w-full h-full">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Award className="h-5 w-5" />
+                      Vendor Price Comparison
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="flex-1 overflow-hidden">
+                    {selectedProductForComparison && (
+                      <VendorPriceComparison
+                        product={convertProductForComparison(
+                          selectedProductForComparison
+                        )}
+                        onPriceSelect={handleVendorPriceSelect}
+                        onPriceUpdate={(productId) => {
+                          // Refresh products data
+                          fetchClientsAndProducts();
+                        }}
+                      />
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               {items.length > 0 ? (
@@ -752,6 +968,75 @@ export default function NewQuotationPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Optimization Suggestions */}
+          {optimizationSuggestions.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  Cost Optimization Suggestions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {optimizationSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          <span className="font-medium text-yellow-800">
+                            {suggestion.productName}
+                          </span>
+                        </div>
+                        <p className="text-sm text-yellow-700 mb-2">
+                          Switch to{" "}
+                          <strong>
+                            {suggestion.recommendedVendor.vendor.companyName}
+                          </strong>{" "}
+                          to save{" "}
+                          <strong>
+                            {suggestion.potentialSavings.toFixed(2)} BDT
+                          </strong>{" "}
+                          ({suggestion.savingsPercentage.toFixed(1)}%)
+                        </p>
+                        <div className="text-xs text-yellow-600">
+                          Current: {suggestion.currentCost.toFixed(2)} BDT →
+                          Recommended:{" "}
+                          {(
+                            suggestion.currentCost - suggestion.potentialSavings
+                          ).toFixed(2)}{" "}
+                          BDT
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => applyOptimizationSuggestion(suggestion)}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-green-800">
+                        Total Potential Savings:{" "}
+                        {optimizationSuggestions
+                          .reduce((sum, s) => sum + s.potentialSavings, 0)
+                          .toFixed(2)}{" "}
+                        BDT
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Terms & Conditions */}
           <Card>

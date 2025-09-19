@@ -1,0 +1,78 @@
+/* Print-specific styles for Steelroot Traders Catalogue */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    body {
+        background: white !important;
+        font-size: 12pt;
+    }
+    
+    .page {
+        width: 100% !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+        box-shadow: none !important;
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+    
+    .header {
+        border-bottom: 2pt solid #2E4BC6 !important;
+    }
+    
+    .logo {
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==') !important;
+        /* Placeholder - replace with actual base64 encoded logo */
+    }
+    
+    .category-header {
+        background: linear-gradient(135deg, #2E4BC6, #00B4A6) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+    
+    .product-card {
+        page-break-inside: avoid;
+        border: 1pt solid #ddd !important;
+        box-shadow: none !important;
+    }
+    
+    .footer {
+        position: fixed;
+        bottom: 10mm;
+        left: 15mm;
+        right: 15mm;
+    }
+    
+    /* Ensure colors print correctly */
+    .company-info h1 {
+        color: #2E4BC6 !important;
+    }
+    
+    .company-info .tagline {
+        color: #00B4A6 !important;
+    }
+    
+    .product-card h3 {
+        color: #2E4BC6 !important;
+        border-bottom: 2pt solid #00B4A6 !important;
+    }
+    
+    .product-card .price {
+        color: #2E4BC6 !important;
+    }
+}
+
+/* Page size settings */
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+@page :first {
+    margin-top: 20mm;
+}

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Steelroot Traders - Industrial Equipment Catalogue</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: white;
+      }
+
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        background: white;
+        page-break-after: always;
+        position: relative;
+      }
+
+      /* Cover Page */
+      .cover-page {
+        background: white;
+        position: relative;
+      }
+
+      .cover-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 30px;
+      }
+
+      .cover-logo {
+        width: 120px;
+        height: 120px;
+        background: url('../public/logo.png') no-repeat center;
+        background-size: contain;
+        border-radius: 8px;
+      }
+
+      .cover-contact {
+        text-align: right;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .cover-title {
+        position: absolute;
+        right: 30px;
+        top: 35%;
+        text-align: right;
+      }
+
+      .cover-title h1 {
+        font-size: 42px;
+        color: #2e4bc6;
+        margin-bottom: 10px;
+      }
+
+      .cover-title h2 {
+        font-size: 32px;
+        color: #2e4bc6;
+      }
+
+      .product-showcase {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 55%;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 3px;
+        padding: 10px;
+      }
+
+      .showcase-item {
+        background: #fff;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .showcase-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      }
+
+      .showcase-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Standard Page Header */
+      .page-header {
+        background: #2e4bc6;
+        color: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .page-logo {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      /* Content Pages */
+      .content-page {
+        padding: 30px;
+      }
+
+      .category-title {
+        background: #666;
+        color: white;
+        padding: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .subcategory-title {
+        background: #888;
+        color: white;
+        padding: 10px 15px;
+        font-size: 16px;
+        margin: 20px 0 15px 0;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .product-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        background: white;
+      }
+
+      .product-item img {
+        width: 100%;
+        height: 80px;
+        object-fit: contain;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+      }
+
+      .product-name {
+        font-size: 11px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      .product-code {
+        font-size: 10px;
+        color: #666;
+      }
+
+      .page-footer {
+        position: absolute;
+        bottom: 15px;
+        left: 30px;
+        right: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .page-number {
+        background: #2e4bc6;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+      }
+
+      /* Side Navigation */
+      .side-nav {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 15mm;
+        height: 100%;
+        background: #666;
+        color: white;
+        font-size: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .nav-item {
+        padding: 8px 5px;
+        border-bottom: 1px solid #555;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+      }
+
+      .nav-item.active {
+        background: #2e4bc6;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        .page {
+          box-shadow: none;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Cover Page -->
+    <div class="page cover-page">
+      <div class="cover-header">
+        <div class="cover-logo"></div>
+        <div class="cover-contact" style="font-size: 16px">
+          <div>📧 steelroottraders@gmail.com</div>
+          <div>📱 +8801781748034</div>
+        </div>
+      </div>
+
+      <div class="cover-title">
+        <h1>Industrial Equipment's</h1>
+        <h2>CATALOG</h2>
+      </div>
+
+      <div class="product-showcase">
+        <div class="showcase-item">
+          <img src="images/pipe&fittings.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/valves.webp" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/fire-protection-systems-500x500.webp" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/electrical.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/powerful-industrial-instrument-construction-repair-work-vector-illustration-set-isolated_223337-18542.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/pump-life-management.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/1029-1.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/360_F_461876037_unBwjt1GoogKGK1bcSFXrSrolDFe4LNA.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/pipes-stack-square-round-straight-steel-metal-pvc-plumbing-pipelines_107791-3503.jpg" alt="Industrial Equipment">
+        </div>
+        <div class="showcase-item">
+          <img src="images/steel-pipes23.webp" alt="Industrial Equipment">
+        </div>
+      </div>
+    </div>
+
+    <!-- About Us Page -->
+    <div class="page">
+      <div class="page-header">
+        <div class="page-logo">STEELROOT</div>
+      </div>
+
+      <div class="content-page">
+        <div class="category-title">About us</div>
+
+        <p style="margin-bottom: 20px"><strong>Assalamu Alaikum,</strong></p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          <strong>STEELROOT TRADERS</strong> is an engineering product and
+          equipment supplier. We also provide engineering solutions tailored to
+          our customer's needs. Our directors are from diverse engineering
+          backgrounds including Mechanical, Civil, Electrical, IPE, Environment,
+          Fire Protection Engineering, Energy Management, and Waste Water
+          Management.
+        </p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          Supplying our customers with products of the right quality is our
+          prime objective.
+        </p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          We provide products and engineering solutions to our valued customers
+          in Textiles & RMG, Oil & Gas, Mining, Marine, Energy, Waste & Water
+          Management, Commercial Buildings (commercial, industrial and
+          residential) and Transport sectors.
+        </p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          Our long-term goal is to manufacture, assemble and supply engineering
+          products in near future to meet the growing demand of our valuable
+          customers.
+        </p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          This catalogue includes a short list of our product ranges. We highly
+          appreciate your kind cooperation by providing business inquiries. We
+          also appreciate your valuable suggestions for our continual
+          improvement.
+        </p>
+
+        <p style="margin-bottom: 15px; text-align: justify">
+          We would like to invite you to visit our showroom and our corporate
+          office at 109, Nawabpur, Wari, Dhaka (see addresses at back Page of
+          this catalog). You can contact us at steelroottraders@gmail.com
+        </p>
+
+        <p style="margin-bottom: 30px">Thanking You,</p>
+
+        <div style="margin-top: 50px">
+          <div
+            style="
+              width: 80px;
+              height: 80px;
+              background: #2e4bc6;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 12px;
+              font-weight: bold;
+              position: relative;
+              margin-bottom: 15px;
+            "
+          >
+            STEELROOT
+            <div
+              style="
+                position: absolute;
+                width: 25px;
+                height: 25px;
+                background: #00b4a6;
+                border-radius: 50%;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              "
+            ></div>
+          </div>
+          <p><strong>S. M. Asir Jaki (Fahim)</strong></p>
+          <p>SteelRoot Traders</p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <div>
+          📍 Industrial Equipment's CATALOG 📱 +8801781748034 📧
+          steelroottraders@gmail.com
+        </div>
+        <div class="page-number">📍</div>
+      </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="page">
+      <div class="page-header">
+        <div class="page-logo">STEELROOT</div>
+      </div>
+
+      <div class="content-page">
+        <div style="display: flex">
+          <div style="flex: 1">
+            <div style="position: relative; height: 400px">
+              <div
+                style="
+                  position: absolute;
+                  left: 50px;
+                  top: 50px;
+                  width: 80px;
+                  height: 80px;
+                  background: #ffd700;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 12px;
+                  color: #333;
+                "
+              >
+                STEELROOT TRADERS
+              </div>
+
+              <div
+                style="
+                  position: absolute;
+                  right: 100px;
+                  top: 30px;
+                  width: 100px;
+                  height: 100px;
+                  background: #87ceeb;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 10px;
+                  color: white;
+                "
+              >
+                Global Reach
+              </div>
+
+              <div
+                style="
+                  position: absolute;
+                  right: 150px;
+                  top: 150px;
+                  width: 60px;
+                  height: 60px;
+                  background: #ff6b6b;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 10px;
+                  color: white;
+                "
+              >
+                Quality
+              </div>
+
+              <div
+                style="
+                  position: absolute;
+                  left: 200px;
+                  top: 200px;
+                  width: 70px;
+                  height: 70px;
+                  background: #4ecdc4;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 10px;
+                  color: white;
+                "
+              >
+                Innovation
+              </div>
+            </div>
+          </div>
+
+          <div style="flex: 1">
+            <h2
+              style="text-align: center; margin-bottom: 30px; font-size: 24px"
+            >
+              CONTENTS OF MAJOR PRODUCT GROUP
+            </h2>
+
+            <div style="font-size: 14px; line-height: 2">
+              <div>
+                🔸 01. Fire Safety
+                Equipment...................................2-3
+              </div>
+              <div>
+                🔸 02. Utilities (Process, Water, Gas, Air & Steam)...3-5
+              </div>
+              <div>
+                🔸 03. Sheet and Structural Steel
+                .................................5
+              </div>
+              <div>
+                🔸 04. Electro Mechanical Support System...................6
+              </div>
+              <div>
+                🔸 05.
+                Lubricant...........................................................6
+              </div>
+              <div>
+                🔸 06. Measuring & Pneumatic Equipment...................6
+              </div>
+              <div>
+                🔸 07. Ventilation
+                (NAC)..............................................7
+              </div>
+              <div>
+                🔸 08. Smoke Management System..............................7
+              </div>
+              <div>
+                🔸 09. Renewable
+                Energy.............................................7
+              </div>
+              <div>
+                🔸 10. Audio Sound
+                System.........................................7
+              </div>
+              <div>
+                🔸 11. Electric
+                Items....................................................7
+              </div>
+              <div>
+                🔸 12. Lightning Protection Systems (LPS)...................8
+              </div>
+              <div>
+                🔸 13. Tools Equipment & Bearing...............................8
+              </div>
+              <div>
+                🔸 14. Turnkey
+                Project.................................................8
+              </div>
+              <div>
+                🔸 15.
+                Consultancy......................................................8
+              </div>
+              <div>
+                🔸 16. Pipe
+                Basic........................................................9
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <div>
+          📧 steelroottraders@gmail.com 📱 +8801781748034 📍 Industrial
+          Equipment's CATALOG
+        </div>
+        <div class="page-number">1</div>
+      </div>
+    </div>
+  </body>
+</html>
