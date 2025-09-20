@@ -16,16 +16,13 @@ export interface ISettings extends Document {
       website: string;
     };
     logo: string;
-    taxId: string;
+    bin: string;
   };
   quotation: {
-    defaultValidityDays: number;
-    defaultTaxRate: number;
-    defaultPaymentTerms: string;
-    defaultDeliveryTerms: string;
-    defaultWarranty: string;
-    quotationPrefix: string;
-    autoNumbering: boolean;
+    authorizedBy: {
+      name: string;
+      designation: string;
+    };
   };
   pricing: {
     defaultProfitMargin: number;
@@ -34,19 +31,13 @@ export interface ISettings extends Document {
     roundPrices: boolean;
     currency: string;
   };
-  notifications: {
-    emailNotifications: boolean;
-    quotationExpiry: boolean;
-    lowStock: boolean;
-    newOrders: boolean;
-  };
   createdAt: Date;
   updatedAt: Date;
 }
 
 const SettingsSchema = new Schema<ISettings>({
   company: {
-    companyName: { type: String, default: 'Steelroot Traders' },
+    companyName: { type: String, required: true },
     address: {
       street: { type: String, default: '' },
       city: { type: String, default: 'Dhaka' },
@@ -60,16 +51,13 @@ const SettingsSchema = new Schema<ISettings>({
       website: { type: String, default: 'www.steelroottraders.com' },
     },
     logo: { type: String, default: '' },
-    taxId: { type: String, default: '' },
+    bin: { type: String, default: '' },
   },
   quotation: {
-    defaultValidityDays: { type: Number, default: 15 },
-    defaultTaxRate: { type: Number, default: 15 },
-    defaultPaymentTerms: { type: String, default: '50% Advance with Work order, rest after delivery' },
-    defaultDeliveryTerms: { type: String, default: 'Delivery time: Supply 3-5 days After Getting PO' },
-    defaultWarranty: { type: String, default: '1 year manufacturer warranty' },
-    quotationPrefix: { type: String, default: 'SRT' },
-    autoNumbering: { type: Boolean, default: true },
+    authorizedBy: {
+      name: { type: String, required: true },
+      designation: { type: String, required: true },
+    },
   },
   pricing: {
     defaultProfitMargin: { type: Number, default: 20 },
@@ -78,14 +66,9 @@ const SettingsSchema = new Schema<ISettings>({
     roundPrices: { type: Boolean, default: true },
     currency: { type: String, default: 'BDT' },
   },
-  notifications: {
-    emailNotifications: { type: Boolean, default: true },
-    quotationExpiry: { type: Boolean, default: true },
-    lowStock: { type: Boolean, default: false },
-    newOrders: { type: Boolean, default: true },
-  },
 }, {
   timestamps: true,
+  strict: true,
 });
 
 export default mongoose.models.Settings || mongoose.model<ISettings>('Settings', SettingsSchema);

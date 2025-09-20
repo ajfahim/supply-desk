@@ -24,12 +24,9 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     
-    // Update or create settings
-    const settings = await Settings.findOneAndUpdate(
-      {},
-      body,
-      { new: true, upsert: true, runValidators: true }
-    );
+    // Delete existing settings and create new one to avoid merge issues
+    await Settings.deleteMany({});
+    const settings = await Settings.create(body);
     
     return NextResponse.json(settings);
   } catch (error) {

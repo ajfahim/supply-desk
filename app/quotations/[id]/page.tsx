@@ -35,6 +35,13 @@ interface Quotation {
     _id: string;
     companyName: string;
     industry: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      zipCode?: string;
+    };
   };
   clientContact: {
     name: string;
@@ -46,6 +53,7 @@ interface Quotation {
   subtotal: number;
   discount: number;
   discountType: string;
+  transportationCost?: number;
   taxRate: number;
   taxAmount: number;
   grandTotal: number;
@@ -54,6 +62,7 @@ interface Quotation {
   deliveryTerms: string;
   paymentTerms: string;
   warranty: string;
+  termsAndInstructions: string;
   notes: string;
   profitSummary: {
     totalCost: number;
@@ -71,11 +80,13 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
 
   const quotationId = params.id as string;
 
   useEffect(() => {
     fetchQuotation();
+    fetchSettings();
   }, [quotationId]);
 
   const fetchQuotation = async () => {
@@ -91,6 +102,18 @@ export default function QuotationDetailPage() {
       console.error("Error fetching quotation:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch("/api/settings");
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      }
+    } catch (err) {
+      console.error("Error fetching settings:", err);
     }
   };
 
@@ -159,12 +182,44 @@ export default function QuotationDetailPage() {
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(100, 100, 100);
-      const companyInfo = [
-        "Industrial Equipment Supplier",
-        "Email: info@steelroottraders.com",
-        "Phone: +880-2-123456789",
-        "www.steelroottraders.com",
-      ];
+      const companyInfo = [];
+
+      // Add company name if exists
+      if (settings?.company?.companyName) {
+        companyInfo.push(settings.company.companyName);
+      }
+
+      // Add address if exists
+      const addressParts = [];
+      if (settings?.company?.address?.street)
+        addressParts.push(settings.company.address.street);
+      if (settings?.company?.address?.city)
+        addressParts.push(settings.company.address.city);
+      if (settings?.company?.address?.country)
+        addressParts.push(settings.company.address.country);
+      if (addressParts.length > 0) {
+        companyInfo.push(addressParts.join(", "));
+      }
+
+      // Add email if exists
+      if (settings?.company?.contact?.email) {
+        companyInfo.push(`Email: ${settings.company.contact.email}`);
+      }
+
+      // Add phone if exists
+      if (settings?.company?.contact?.phone) {
+        companyInfo.push(`Phone: ${settings.company.contact.phone}`);
+      }
+
+      // Add BIN if exists
+      if (settings?.company?.bin) {
+        companyInfo.push(`BIN: ${settings.company.bin}`);
+      }
+
+      // Add website if exists
+      if (settings?.company?.contact?.website) {
+        companyInfo.push(settings.company.contact.website);
+      }
 
       let infoY = currentY + 3;
       companyInfo.forEach((line) => {
@@ -205,20 +260,55 @@ export default function QuotationDetailPage() {
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       let toY = currentY;
-      const toLines = [
-        quotation.client.companyName,
-        quotation.clientContact.name || "",
-        quotation.clientContact.title || "",
-        quotation.clientContact.email || "",
-        quotation.clientContact.phone || "",
-      ];
 
-      toLines.forEach((line) => {
-        if (line.trim()) {
-          pdf.text(line, leftColX, toY);
-          toY += 3.5;
+      // Contact person name (first line)
+      if (quotation.clientContact.name) {
+        pdf.text(quotation.clientContact.name, leftColX, toY);
+        toY += 3.5;
+      }
+
+      // Contact person designation (second line)
+      if (quotation.clientContact.title) {
+        pdf.text(quotation.clientContact.title, leftColX, toY);
+        toY += 3.5;
+      }
+
+      // Company name (third line, in bold)
+      pdf.setFont("helvetica", "bold");
+      pdf.text(quotation.client.companyName, leftColX, toY);
+      toY += 3.5;
+      pdf.setFont("helvetica", "normal");
+
+      // Client address (fourth line onwards)
+      if (quotation.client.address) {
+        const addressLines = [];
+
+        // Build address string
+        if (quotation.client.address.street) {
+          addressLines.push(quotation.client.address.street);
         }
-      });
+
+        // City, state, zipCode, country on separate lines or combined
+        const locationParts = [];
+        if (quotation.client.address.city)
+          locationParts.push(quotation.client.address.city);
+        if (quotation.client.address.zipCode)
+          locationParts.push(quotation.client.address.zipCode);
+        if (quotation.client.address.country)
+          locationParts.push(quotation.client.address.country);
+
+        if (locationParts.length > 0) {
+          addressLines.push(locationParts.join(", "));
+        }
+
+        // Print each address line
+        addressLines.forEach((line) => {
+          if (line.trim()) {
+            pdf.text(line, leftColX, toY);
+            toY += 3.5;
+          }
+        });
+      }
 
       // SHIP TO content
       let shipToY = currentY;
@@ -318,10 +408,6 @@ export default function QuotationDetailPage() {
           });
         }
 
-        const vendorText = `Vendor: ${String(
-          item.selectedVendor?.companyName || "N/A"
-        )}`;
-
         // Build comprehensive item description
         let fullSpecs = "";
         if (brandText) fullSpecs += `${brandText} `;
@@ -333,7 +419,6 @@ export default function QuotationDetailPage() {
         let contentLines = 1; // Item name
         if (fullSpecs.trim()) contentLines += 1; // Brand/model line
         contentLines += specsLines.length; // All specification lines
-        contentLines += 1; // Vendor line
 
         const rowHeight = Math.max(baseHeight, contentLines * lineHeight + 6);
 
@@ -388,8 +473,6 @@ export default function QuotationDetailPage() {
             specY += 3;
           }
         }
-
-        pdf.text(vendorText, colPositions[1] + 1, specY);
 
         pdf.setFontSize(7);
 
@@ -455,11 +538,52 @@ export default function QuotationDetailPage() {
       );
       currentY += 5;
 
-      if (quotation.discount > 0) {
+      // Always show discount line
+      pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+      pdf.text("DISCOUNT", totalsStartX + 2, currentY + 3.5);
+      pdf.text(
+        (quotation.discount || 0).toFixed(2),
+        totalsStartX + correctTotalsWidth - 2,
+        currentY + 3.5,
+        { align: "right" }
+      );
+      currentY += 5;
+
+      // Calculate subtotal after discount
+      const subtotalAfterDiscount = quotation.subtotal - (quotation.discount || 0);
+      
+      // Show "SUBTOTAL LESS DISCOUNT" line
+      pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+      pdf.text("SUBTOTAL LESS DISCOUNT", totalsStartX + 2, currentY + 3.5);
+      pdf.text(
+        subtotalAfterDiscount.toFixed(2),
+        totalsStartX + correctTotalsWidth - 2,
+        currentY + 3.5,
+        { align: "right" }
+      );
+      currentY += 5;
+
+      // VAT Rate line
+      if (quotation.taxRate > 0) {
         pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
-        pdf.text("DISCOUNT", totalsStartX + 2, currentY + 3.5);
         pdf.text(
-          `-${quotation.discount.toFixed(0)}`,
+          "VAT RATE",
+          totalsStartX + 2,
+          currentY + 3.5
+        );
+        pdf.text(
+          `${quotation.taxRate.toFixed(1)}%`,
+          totalsStartX + correctTotalsWidth - 2,
+          currentY + 3.5,
+          { align: "right" }
+        );
+        currentY += 5;
+
+        // Total VAT line
+        pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+        pdf.text("TOTAL VAT", totalsStartX + 2, currentY + 3.5);
+        pdf.text(
+          quotation.taxAmount.toFixed(2),
           totalsStartX + correctTotalsWidth - 2,
           currentY + 3.5,
           { align: "right" }
@@ -467,15 +591,12 @@ export default function QuotationDetailPage() {
         currentY += 5;
       }
 
-      if (quotation.taxAmount > 0) {
+      // Shipping/Handling line
+      if ((quotation.transportationCost || 0) > 0) {
         pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+        pdf.text("SHIPPING/HANDLING", totalsStartX + 2, currentY + 3.5);
         pdf.text(
-          `VAT RATE ${quotation.taxRate}%`,
-          totalsStartX + 2,
-          currentY + 3.5
-        );
-        pdf.text(
-          quotation.taxAmount.toFixed(0),
+          (quotation.transportationCost || 0).toFixed(2),
           totalsStartX + correctTotalsWidth - 2,
           currentY + 3.5,
           { align: "right" }
@@ -491,7 +612,7 @@ export default function QuotationDetailPage() {
       pdf.setFont("helvetica", "bold");
       pdf.text("Quote Total", totalsStartX + 2, currentY + 4);
       pdf.text(
-        `BDT ${quotation.grandTotal.toFixed(0)}`,
+        `BDT ${quotation.grandTotal.toFixed(2)}`,
         totalsStartX + correctTotalsWidth - 2,
         currentY + 4,
         { align: "right" }
@@ -509,8 +630,15 @@ export default function QuotationDetailPage() {
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
       const termsText =
-        quotation.paymentTerms || "50% Advance with Work order, rest after delivery";
-      pdf.text(termsText, margin, currentY);
+        quotation.termsAndInstructions ||
+        "50% Advance with the Work order, the rest after delivery\nDelivery time: Supply 3-5 days After Getting the PO\nThe Price included 5% AIT & 10% VAT";
+
+      // Handle multi-line terms text
+      const termsLines = termsText.split("\n");
+      termsLines.forEach((line, index) => {
+        pdf.text(line, margin, currentY + index * 3);
+      });
+      currentY += termsLines.length * 3;
       currentY += 8;
 
       // Footer - check if we need a new page
@@ -522,25 +650,27 @@ export default function QuotationDetailPage() {
       // Single footer section
       const footerY = Math.max(currentY + 10, pageHeight - 35);
 
-      // Left side - Company info
+      // Right side - Single authorization section
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
-      pdf.text("Authorized by", margin, footerY);
-
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Steelroot Traders", margin, footerY + 4);
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(6);
-      pdf.text("Industrial Equipment Supplier", margin, footerY + 7);
-
-      if (quotation.warranty) {
-        pdf.text(`Warranty: ${quotation.warranty}`, margin, footerY + 11);
-      }
-
-      // Right side - Signature line
-      pdf.setFontSize(7);
       pdf.text("Authorized by", pageWidth - 50, footerY);
-      pdf.line(pageWidth - 50, footerY + 8, pageWidth - 10, footerY + 8);
+
+      // Only show authorization details if they exist in settings
+      if (
+        settings?.quotation?.authorizedBy?.name &&
+        settings?.quotation?.authorizedBy?.designation
+      ) {
+        const authorizedName = settings.quotation.authorizedBy.name;
+        const authorizedDesignation =
+          settings.quotation.authorizedBy.designation;
+
+        // Add more space for signature (increased gap from +4 to +12)
+        pdf.setFont("helvetica", "bold");
+        pdf.text(authorizedName, pageWidth - 50, footerY + 12);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(6);
+        pdf.text(authorizedDesignation, pageWidth - 50, footerY + 15);
+      }
 
       // Bottom center - Thank you message
       pdf.setFontSize(6);
@@ -609,8 +739,8 @@ export default function QuotationDetailPage() {
             <Badge className={getStatusColor(quotation.status)}>
               {quotation.status.toUpperCase()}
             </Badge>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => router.push(`/quotations/${quotationId}/edit`)}
             >
@@ -741,6 +871,15 @@ export default function QuotationDetailPage() {
                     <span>-{formatCurrency(quotation.discount)}</span>
                   </div>
                 )}
+                {quotation.transportationCost &&
+                  quotation.transportationCost > 0 && (
+                    <div className="flex justify-between">
+                      <span>Transportation Cost:</span>
+                      <span>
+                        {formatCurrency(quotation.transportationCost)}
+                      </span>
+                    </div>
+                  )}
                 {quotation.taxAmount > 0 && (
                   <div className="flex justify-between">
                     <span>Tax ({quotation.taxRate}%):</span>
@@ -856,16 +995,16 @@ export default function QuotationDetailPage() {
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 variant="outline"
                 onClick={() => router.push(`/quotations/${quotationId}/edit`)}
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Quotation
               </Button>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 variant="outline"
                 onClick={handleDownloadPDF}
                 disabled={isGeneratingPDF}

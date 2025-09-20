@@ -30,7 +30,7 @@ interface CompanySettings {
     website: string;
   };
   logo: string;
-  bin: string;
+  taxId: string;
 }
 
 interface QuotationSettings {
@@ -48,6 +48,7 @@ interface PricingSettings {
   currency: string;
 }
 
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,8 +58,8 @@ export default function SettingsPage() {
       street: "",
       city: "Dhaka",
       state: "Dhaka",
-      zipCode: "",
       country: "Bangladesh",
+      zipCode: "",
     },
     contact: {
       email: "info@steelroottraders.com",
@@ -66,7 +67,7 @@ export default function SettingsPage() {
       website: "www.steelroottraders.com",
     },
     logo: "",
-    bin: "",
+    taxId: "",
   });
 
   const [quotationSettings, setQuotationSettings] = useState<QuotationSettings>({
@@ -84,6 +85,7 @@ export default function SettingsPage() {
     currency: "BDT",
   });
 
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -94,14 +96,7 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.company) setCompanySettings(data.company);
-        if (data.quotation) {
-          setQuotationSettings({
-            authorizedBy: {
-              name: data.quotation.authorizedBy?.name || "Md. Ataur Rahaman",
-              designation: data.quotation.authorizedBy?.designation || "Proprietor - Optimech Project Solution",
-            },
-          });
-        }
+        if (data.quotation) setQuotationSettings(data.quotation);
         if (data.pricing) setPricingSettings(data.pricing);
       }
     } catch (error) {
@@ -142,23 +137,34 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-spin" />
+            <p className="text-gray-600">Loading settings...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Configure your application settings and preferences
-        </p>
-      </div>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-600 mt-2">
+              Configure your application preferences and defaults
+            </p>
+          </div>
+          <Button onClick={saveSettings} disabled={saving}>
+            <Save className="w-4 h-4 mr-2" />
+            {saving ? "Saving..." : "Save Settings"}
+          </Button>
+        </div>
 
-      <div className="space-y-6">
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Company Settings */}
           <Card>
             <CardHeader>
@@ -182,23 +188,78 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="street">Street Address</Label>
-                  <Input
-                    id="street"
-                    value={companySettings.address.street}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        address: {
-                          ...companySettings.address,
-                          street: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={companySettings.contact.email}
+                  onChange={(e) =>
+                    setCompanySettings({
+                      ...companySettings,
+                      contact: {
+                        ...companySettings.contact,
+                        email: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={companySettings.contact.phone}
+                  onChange={(e) =>
+                    setCompanySettings({
+                      ...companySettings,
+                      contact: {
+                        ...companySettings.contact,
+                        phone: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  value={companySettings.contact.website}
+                  onChange={(e) =>
+                    setCompanySettings({
+                      ...companySettings,
+                      contact: {
+                        ...companySettings.contact,
+                        website: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <Separator />
+
+              <div>
+                <Label htmlFor="street">Street Address</Label>
+                <Input
+                  id="street"
+                  value={companySettings.address.street}
+                  onChange={(e) =>
+                    setCompanySettings({
+                      ...companySettings,
+                      address: {
+                        ...companySettings.address,
+                        street: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label htmlFor="city">City</Label>
                   <Input
@@ -210,41 +271,6 @@ export default function SettingsPage() {
                         address: {
                           ...companySettings.address,
                           city: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={companySettings.address.state}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        address: {
-                          ...companySettings.address,
-                          state: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="zipCode">ZIP Code</Label>
-                  <Input
-                    id="zipCode"
-                    value={companySettings.address.zipCode}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        address: {
-                          ...companySettings.address,
-                          zipCode: e.target.value,
                         },
                       })
                     }
@@ -268,67 +294,15 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={companySettings.contact.email}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        contact: {
-                          ...companySettings.contact,
-                          email: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={companySettings.contact.phone}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        contact: {
-                          ...companySettings.contact,
-                          phone: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={companySettings.contact.website}
-                    onChange={(e) =>
-                      setCompanySettings({
-                        ...companySettings,
-                        contact: {
-                          ...companySettings.contact,
-                          website: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
               <div>
-                <Label htmlFor="bin">BIN</Label>
+                <Label htmlFor="taxId">Tax ID</Label>
                 <Input
-                  id="bin"
-                  value={companySettings.bin}
+                  id="taxId"
+                  value={companySettings.taxId}
                   onChange={(e) =>
                     setCompanySettings({
                       ...companySettings,
-                      bin: e.target.value,
+                      taxId: e.target.value,
                     })
                   }
                 />
@@ -349,7 +323,7 @@ export default function SettingsPage() {
                 <Label htmlFor="authorizedName">Authorized Person Name</Label>
                 <Input
                   id="authorizedName"
-                  value={quotationSettings.authorizedBy?.name || ""}
+                  value={quotationSettings.authorizedBy.name}
                   onChange={(e) =>
                     setQuotationSettings({
                       ...quotationSettings,
@@ -366,7 +340,7 @@ export default function SettingsPage() {
                 <Label htmlFor="authorizedDesignation">Designation</Label>
                 <Input
                   id="authorizedDesignation"
-                  value={quotationSettings.authorizedBy?.designation || ""}
+                  value={quotationSettings.authorizedBy.designation}
                   onChange={(e) =>
                     setQuotationSettings({
                       ...quotationSettings,
@@ -407,16 +381,24 @@ export default function SettingsPage() {
 
               <div>
                 <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  value={pricingSettings.currency}
-                  onChange={(e) =>
+                <Select
+                  value={pricingSettings.currency || "BDT"}
+                  onValueChange={(value) =>
                     setPricingSettings({
                       ...pricingSettings,
-                      currency: e.target.value,
+                      currency: value,
                     })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BDT">BDT - Bangladeshi Taka</SelectItem>
+                    <SelectItem value="USD">USD - US Dollar</SelectItem>
+                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-3">
@@ -464,6 +446,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
         </div>
 
         <div className="mt-8 flex justify-center">

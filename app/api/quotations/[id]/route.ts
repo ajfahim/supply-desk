@@ -22,7 +22,19 @@ export async function GET(
       );
     }
     
-    return NextResponse.json(quotation);
+    // Convert to plain object and manually populate clientContact
+    const quotationObj = quotation.toObject();
+    if (quotationObj.client && quotationObj.client.contacts) {
+      const clientContactId = quotationObj.clientContact.toString();
+      const contactInfo = quotationObj.client.contacts.find(
+        (contact: any) => contact._id.toString() === clientContactId
+      );
+      if (contactInfo) {
+        quotationObj.clientContact = contactInfo;
+      }
+    }
+    
+    return NextResponse.json(quotationObj);
   } catch (error) {
     console.error('Error fetching quotation:', error);
     return NextResponse.json(
@@ -58,7 +70,7 @@ export async function PUT(
       { ...updateData, status },
       { new: true, runValidators: true }
     )
-      .populate('client', 'companyName contacts')
+      .populate('client', 'companyName contacts address industry')
       .populate('items.product', 'name brand modelName')
       .populate('items.selectedVendor', 'companyName');
     
@@ -69,7 +81,19 @@ export async function PUT(
       );
     }
     
-    return NextResponse.json(quotation);
+    // Convert to plain object and manually populate clientContact
+    const quotationObj = quotation.toObject();
+    if (quotationObj.client && quotationObj.client.contacts) {
+      const clientContactId = quotationObj.clientContact.toString();
+      const contactInfo = quotationObj.client.contacts.find(
+        (contact: any) => contact._id.toString() === clientContactId
+      );
+      if (contactInfo) {
+        quotationObj.clientContact = contactInfo;
+      }
+    }
+    
+    return NextResponse.json(quotationObj);
   } catch (error) {
     console.error('Error updating quotation:', error);
     return NextResponse.json(

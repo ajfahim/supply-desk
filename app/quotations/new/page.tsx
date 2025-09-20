@@ -62,6 +62,9 @@ interface Product {
   brand: string;
   modelName: string;
   unit: string;
+  specifications?: {
+    [key: string]: any;
+  };
   vendorPrices: Array<{
     vendor: {
       _id: string;
@@ -84,8 +87,12 @@ interface QuotationItem {
   productName: string;
   brand: string;
   modelName: string;
+  specifications?: {
+    [key: string]: any;
+  };
   quantity: number;
   unit: string;
+  unitPrice?: number;
   selectedVendor: string;
   vendorName: string;
   vendorCost: number;
@@ -112,7 +119,7 @@ export default function NewQuotationPage() {
   const [selectedProductForPricing, setSelectedProductForPricing] =
     useState<Product | null>(null);
   const [vendorPrice, setVendorPrice] = useState("");
-  const [profitMargin, setProfitMargin] = useState("25");
+  const [profitMargin, setProfitMargin] = useState("15");
   const [settings, setSettings] = useState<any>(null);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
   const [selectedProductForComparison, setSelectedProductForComparison] =
@@ -127,20 +134,41 @@ export default function NewQuotationPage() {
   const [paymentTerms, setPaymentTerms] = useState("30 days");
   const [warranty, setWarranty] = useState("");
   const [notes, setNotes] = useState("");
+  const [termsAndInstructions, setTermsAndInstructions] = useState(
+    "50% Advance with the Work order, the rest after delivery\nDelivery time: Supply 3-5 days After Getting the PO\nThe Price included 5% AIT & 10% VAT"
+  );
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">(
     "percentage"
   );
-  const [taxRate, setTaxRate] = useState(0);
+  const [transportationCost, setTransportationCost] = useState(0);
+  const [taxRate, setTaxRate] = useState(10);
 
   useEffect(() => {
     fetchClientsAndProducts();
+    fetchSettings();
 
     // Set default valid until date (30 days from now)
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 30);
     setValidUntil(defaultDate.toISOString().split("T")[0]);
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch("/api/settings");
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+        // Set default tax rate from settings or fallback to 10
+        setTaxRate(data.pricing?.defaultTaxRate || 10);
+        // Set default profit margin from settings
+        setProfitMargin(String(data.pricing?.defaultProfitMargin || 15));
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+    }
+  };
 
   useEffect(() => {
     // Generate optimization suggestions when items change
@@ -257,9 +285,9 @@ export default function NewQuotationPage() {
       vendorName: vendorPrice.vendor.companyName,
       vendorCost: vendorPrice.price,
       vendorCurrency: vendorPrice.currency,
-      profitMargin: 20,
-      sellingPrice: vendorPrice.price * 1.2,
-      lineTotal: vendorPrice.price * 1.2,
+      profitMargin: settings?.pricing?.defaultProfitMargin || 15,
+      sellingPrice: vendorPrice.price * (1 + (settings?.pricing?.defaultProfitMargin || 15) / 100),
+      lineTotal: vendorPrice.price * (1 + (settings?.pricing?.defaultProfitMargin || 15) / 100),
       deliveryTime: vendorPrice.deliveryTime,
       warranty: "",
       notes: "",
@@ -316,6 +344,16 @@ export default function NewQuotationPage() {
       quantity: 1,
       unitPrice: pricing.sellingPrice,
       unit: selectedProductForPricing.unit,
+      selectedVendor: "",
+      vendorName: "",
+      vendorCost: 0,
+      vendorCurrency: "BDT",
+      profitMargin: 15,
+      sellingPrice: pricing.sellingPrice,
+      lineTotal: pricing.sellingPrice,
+      deliveryTime: "",
+      warranty: "",
+      notes: "",
     };
 
     setItems([...items, newItem]);
@@ -336,9 +374,9 @@ export default function NewQuotationPage() {
       vendorName: vendor.vendor.companyName,
       vendorCost: vendor.price,
       vendorCurrency: vendor.currency,
-      profitMargin: 20, // Default 20% margin
-      sellingPrice: vendor.price * 1.2,
-      lineTotal: vendor.price * 1.2,
+      profitMargin: settings?.pricing?.defaultProfitMargin || 15, // Default margin from settings
+      sellingPrice: vendor.price * (1 + (settings?.pricing?.defaultProfitMargin || 15) / 100),
+      lineTotal: vendor.price * (1 + (settings?.pricing?.defaultProfitMargin || 15) / 100),
       deliveryTime: vendor.deliveryTime,
       warranty: "",
       notes: "",
@@ -387,10 +425,17 @@ export default function NewQuotationPage() {
     }
 
     const afterDiscount = subtotal - discountAmount;
-    const taxAmount = (afterDiscount * taxRate) / 100;
-    const grandTotal = afterDiscount + taxAmount;
+    const afterTransportation = afterDiscount + transportationCost;
+    const taxAmount = (afterTransportation * taxRate) / 100;
+    const grandTotal = afterTransportation + taxAmount;
 
-    return { subtotal, discountAmount, taxAmount, grandTotal };
+    return {
+      subtotal,
+      discountAmount,
+      transportationCost,
+      taxAmount,
+      grandTotal,
+    };
   };
 
   const handleSubmit = async () => {
@@ -409,9 +454,11 @@ export default function NewQuotationPage() {
         deliveryTerms,
         paymentTerms,
         warranty,
+        termsAndInstructions,
         notes,
         discount,
         discountType,
+        transportationCost,
         taxRate,
         createdBy: "System User", // Replace with actual user
       };
@@ -1044,45 +1091,15 @@ export default function NewQuotationPage() {
               <CardTitle>Terms & Conditions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="validUntil">Valid Until</Label>
-                  <Input
-                    type="date"
-                    value={validUntil}
-                    onChange={(e) => setValidUntil(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="deliveryTerms">Delivery Terms</Label>
-                  <Input
-                    value={deliveryTerms}
-                    onChange={(e) => setDeliveryTerms(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="paymentTerms">Payment Terms</Label>
-                  <Input
-                    value={paymentTerms}
-                    onChange={(e) => setPaymentTerms(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="warranty">Warranty</Label>
-                  <Input
-                    value={warranty}
-                    onChange={(e) => setWarranty(e.target.value)}
-                    placeholder="e.g., 1 year manufacturer warranty"
-                  />
-                </div>
-              </div>
               <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="termsAndInstructions">
+                  Terms & Instructions
+                </Label>
                 <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional notes or terms..."
-                  rows={3}
+                  value={termsAndInstructions}
+                  onChange={(e) => setTermsAndInstructions(e.target.value)}
+                  placeholder="Terms and instructions for the quotation..."
+                  rows={6}
                 />
               </div>
             </CardContent>
@@ -1137,6 +1154,26 @@ export default function NewQuotationPage() {
                     <span>Discount Amount:</span>
                     <span>-{discountAmount.toFixed(2)} BDT</span>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Transportation Cost (BDT)</Label>
+                  <Input
+                    type="number"
+                    value={transportationCost}
+                    onChange={(e) =>
+                      setTransportationCost(parseFloat(e.target.value) || 0)
+                    }
+                    min="0"
+                    step="0.01"
+                    placeholder="Optional transportation cost"
+                  />
+                  {transportationCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Transportation Cost:</span>
+                      <span>{transportationCost.toFixed(2)} BDT</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

@@ -41,6 +41,7 @@ export interface IQuotation extends Document {
   subtotal: number;
   discount: number;
   discountType: 'percentage' | 'fixed';
+  transportationCost?: number;
   taxRate: number;
   taxAmount: number;
   grandTotal: number;
@@ -48,6 +49,7 @@ export interface IQuotation extends Document {
   deliveryTerms: string;
   paymentTerms: string;
   warranty: string;
+  termsAndInstructions: string;
   notes: string;
   status: 'draft' | 'review' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
   sentAt?: Date;
@@ -214,6 +216,11 @@ const QuotationSchema = new Schema<IQuotation>({
     enum: ['percentage', 'fixed'],
     default: 'percentage',
   },
+  transportationCost: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   taxRate: {
     type: Number,
     default: 0,
@@ -245,6 +252,10 @@ const QuotationSchema = new Schema<IQuotation>({
     default: '30 days',
   },
   warranty: {
+    type: String,
+    trim: true,
+  },
+  termsAndInstructions: {
     type: String,
     trim: true,
   },
