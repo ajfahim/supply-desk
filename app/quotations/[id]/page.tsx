@@ -620,6 +620,22 @@ export default function QuotationDetailPage() {
 
       currentY += 15;
 
+      // Terms & Instructions - check if we need a new page before adding terms
+      const termsText =
+        quotation.termsAndInstructions ||
+        "50% Advance with the Work order, the rest after delivery\nDelivery time: Supply 3-5 days After Getting the PO\nThe Price included 5% AIT & 10% VAT";
+
+      const termsLines = termsText.split("\n");
+      const termsHeight = 12 + (termsLines.length * 3) + 8; // Title + lines + spacing
+      const footerHeight = 40; // Space needed for footer
+      const requiredSpace = termsHeight + footerHeight;
+
+      // Check if we need a new page for terms and footer
+      if (currentY + requiredSpace > pageHeight) {
+        pdf.addPage();
+        currentY = margin;
+      }
+
       // Terms & Instructions
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(8);
@@ -629,23 +645,13 @@ export default function QuotationDetailPage() {
 
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
-      const termsText =
-        quotation.termsAndInstructions ||
-        "50% Advance with the Work order, the rest after delivery\nDelivery time: Supply 3-5 days After Getting the PO\nThe Price included 5% AIT & 10% VAT";
 
       // Handle multi-line terms text
-      const termsLines = termsText.split("\n");
       termsLines.forEach((line, index) => {
         pdf.text(line, margin, currentY + index * 3);
       });
       currentY += termsLines.length * 3;
       currentY += 8;
-
-      // Footer - check if we need a new page
-      if (currentY > pageHeight - 40) {
-        pdf.addPage();
-        currentY = margin;
-      }
 
       // Single footer section
       const footerY = Math.max(currentY + 10, pageHeight - 35);

@@ -73,7 +73,7 @@ export default function InvoicesPage() {
         limit: pagination.limit.toString(),
       });
 
-      if (filters.status) params.append("status", filters.status);
+      if (filters.status && filters.status !== "all") params.append("status", filters.status);
       if (filters.clientId) params.append("clientId", filters.clientId);
 
       const response = await fetch(`/api/invoices?${params}`);
@@ -162,7 +162,7 @@ export default function InvoicesPage() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="sent">Sent</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>

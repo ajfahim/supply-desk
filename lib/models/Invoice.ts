@@ -228,7 +228,6 @@ const InvoiceSchema = new Schema<IInvoice>({
 });
 
 // Indexes for efficient querying
-InvoiceSchema.index({ invoiceNumber: 1 });
 InvoiceSchema.index({ quotation: 1 });
 InvoiceSchema.index({ client: 1 });
 InvoiceSchema.index({ status: 1 });

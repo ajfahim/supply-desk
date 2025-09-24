@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const productId = searchParams.get('productId');
-    const vendorId = searchParams.get('vendorId');
-    const category = searchParams.get('category');
+    const productId = searchParams.get('productId') || undefined;
+    const vendorId = searchParams.get('vendorId') || undefined;
+    const category = searchParams.get('category') || undefined;
     
     // Get price analytics
     const analytics = await getPriceAnalytics(productId, vendorId, category);

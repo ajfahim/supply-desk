@@ -89,6 +89,40 @@ export default function InvoiceDetailPage() {
   const [status, setStatus] = useState("");
   const [paidAmount, setPaidAmount] = useState("");
   const [paidDate, setPaidDate] = useState("");
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "BDT",
+      minimumFractionDigits: 0,
+    }).format(amount).replace("BDT", "৳");
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "sent":
+        return "bg-blue-100 text-blue-800";
+      case "paid":
+        return "bg-green-100 text-green-800";
+      case "overdue":
+        return "bg-red-100 text-red-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -147,105 +181,346 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!invoice) return;
 
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.width;
-    const pageHeight = pdf.internal.pageSize.height;
-    const margin = 20;
+    setIsGeneratingPDF(true);
+    try {
+      // Fetch settings for company information
+      let settings = null;
+      try {
+        const settingsResponse = await fetch("/api/settings");
+        if (settingsResponse.ok) {
+          settings = await settingsResponse.json();
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      }
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 10;
+    const contentWidth = pageWidth - 2 * margin;
     let currentY = margin;
 
-    // Header
-    pdf.setFontSize(24);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("INVOICE", pageWidth / 2, currentY, { align: "center" });
-    currentY += 15;
+    // Add logo
+    try {
+      const logoImg = new Image();
+      logoImg.src = "/logo.png";
+      await new Promise((resolve) => {
+        logoImg.onload = resolve;
+      });
 
-    // Invoice details
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`Invoice Number: ${invoice.invoiceNumber}`, margin, currentY);
-    currentY += 7;
-    pdf.text(`Quotation Number: ${invoice.quotationNumber}`, margin, currentY);
-    currentY += 7;
-    pdf.text(`Purchase Order: ${invoice.purchaseOrderNumber}`, margin, currentY);
-    currentY += 7;
-    pdf.text(`Date: ${new Date(invoice.createdAt).toLocaleDateString()}`, margin, currentY);
-    currentY += 7;
-    pdf.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, margin, currentY);
-    currentY += 15;
-
-    // Client information
-    pdf.setFont("helvetica", "bold");
-    pdf.text("BILL TO:", margin, currentY);
-    currentY += 7;
-    pdf.setFont("helvetica", "normal");
-    pdf.text(invoice.client.companyName, margin, currentY);
-    currentY += 5;
-    if (invoice.client.address) {
-      pdf.text(invoice.client.address.street, margin, currentY);
-      currentY += 5;
-      pdf.text(`${invoice.client.address.city}, ${invoice.client.address.state} ${invoice.client.address.zipCode}`, margin, currentY);
-      currentY += 5;
-      pdf.text(invoice.client.address.country, margin, currentY);
-      currentY += 10;
+      // Add logo (top left)
+      pdf.addImage(logoImg, "PNG", margin, currentY, 35, 18);
+    } catch (error) {
+      console.log("Logo not loaded, continuing without it");
     }
 
-    // Contact information
-    if (invoice.clientContact) {
-      pdf.text(`Contact: ${invoice.clientContact.name} (${invoice.clientContact.title})`, margin, currentY);
-      currentY += 5;
-      pdf.text(`Email: ${invoice.clientContact.email}`, margin, currentY);
-      currentY += 5;
-      pdf.text(`Phone: ${invoice.clientContact.phone}`, margin, currentY);
-      currentY += 15;
+    // Company info (top right)
+    pdf.setFontSize(7);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    const companyInfo = [];
+
+    // Add company name if exists
+    if (settings?.company?.companyName) {
+      companyInfo.push(settings.company.companyName);
     }
 
-    // Items table header
-    const tableStartY = currentY;
-    const colWidths = [80, 25, 20, 30, 30];
-    const colPositions = [margin, margin + colWidths[0], margin + colWidths[0] + colWidths[1], 
-                         margin + colWidths[0] + colWidths[1] + colWidths[2], 
-                         margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3]];
+    // Add address if exists
+    const addressParts = [];
+    if (settings?.company?.address?.street)
+      addressParts.push(settings.company.address.street);
+    if (settings?.company?.address?.city)
+      addressParts.push(settings.company.address.city);
+    if (settings?.company?.address?.country)
+      addressParts.push(settings.company.address.country);
+    if (addressParts.length > 0) {
+      companyInfo.push(addressParts.join(", "));
+    }
 
-    pdf.setFont("helvetica", "bold");
-    pdf.rect(margin, currentY, pageWidth - 2 * margin, 8, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.text("DESCRIPTION", colPositions[0] + 2, currentY + 5.5);
-    pdf.text("QTY", colPositions[1] + 2, currentY + 5.5);
-    pdf.text("UNIT", colPositions[2] + 2, currentY + 5.5);
-    pdf.text("PRICE", colPositions[3] + 2, currentY + 5.5);
-    pdf.text("TOTAL", colPositions[4] + 2, currentY + 5.5);
-    currentY += 8;
+    // Add email if exists
+    if (settings?.company?.contact?.email) {
+      companyInfo.push(`Email: ${settings.company.contact.email}`);
+    }
 
-    // Items
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFont("helvetica", "normal");
-    invoice.items.forEach((item) => {
-      const description = `${item.productName}\n${item.brand} ${item.modelName}`;
-      const lines = pdf.splitTextToSize(description, colWidths[0] - 4);
-      const lineHeight = 5;
-      const itemHeight = Math.max(8, lines.length * lineHeight);
+    // Add phone if exists
+    if (settings?.company?.contact?.phone) {
+      companyInfo.push(`Phone: ${settings.company.contact.phone}`);
+    }
 
-      pdf.rect(margin, currentY, pageWidth - 2 * margin, itemHeight);
-      
-      pdf.text(lines, colPositions[0] + 2, currentY + 4);
-      pdf.text(item.quantity.toString(), colPositions[1] + 2, currentY + 4);
-      pdf.text(item.unit, colPositions[2] + 2, currentY + 4);
-      pdf.text(item.sellingPrice.toFixed(0), colPositions[3] + 2, currentY + 4);
-      pdf.text(item.lineTotal.toFixed(0), colPositions[4] + 2, currentY + 4);
-      
-      currentY += itemHeight;
+    // Add BIN if exists
+    if (settings?.company?.bin) {
+      companyInfo.push(`BIN: ${settings.company.bin}`);
+    }
+
+    // Add website if exists
+    if (settings?.company?.contact?.website) {
+      companyInfo.push(settings.company.contact.website);
+    }
+
+    let infoY = currentY + 3;
+    companyInfo.forEach((line) => {
+      pdf.text(line, pageWidth - margin, infoY, { align: "right" });
+      infoY += 3;
     });
 
-    // Totals section
+    currentY += 25;
+
+    // Invoice title with border
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(margin, currentY, contentWidth, 8, "F");
+    pdf.setDrawColor(0, 0, 0);
+    pdf.rect(margin, currentY, contentWidth, 8);
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("SALES INVOICE", pageWidth / 2, currentY + 5.5, {
+      align: "center",
+    });
+    currentY += 18; // Added more spacing below
+
+    // Two column layout for TO and SHIP TO
+    const leftColX = margin;
+    const shipToContentX = pageWidth - margin - 60; // Move to far right
+
+    // TO section
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("TO:", leftColX, currentY);
+    currentY += 5;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.client.companyName, leftColX, currentY);
+    currentY += 4;
+
+    if (invoice.client.address) {
+      pdf.text(invoice.client.address.street, leftColX, currentY);
+      currentY += 4;
+      pdf.text(
+        `${invoice.client.address.city}, ${invoice.client.address.state} ${invoice.client.address.zipCode}`,
+        leftColX,
+        currentY
+      );
+      currentY += 4;
+      pdf.text(invoice.client.address.country, leftColX, currentY);
+    }
+
+    // SHIP TO section (on the right)
+    let shipToY = currentY - 17;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("SHIP TO:", shipToContentX, shipToY);
+    shipToY += 5;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.client.companyName, shipToContentX, shipToY);
+    shipToY += 4;
+
+    if (invoice.client.address) {
+      pdf.text(invoice.client.address.street, shipToContentX, shipToY);
+      shipToY += 4;
+      pdf.text(
+        `${invoice.client.address.city}, ${invoice.client.address.state} ${invoice.client.address.zipCode}`,
+        shipToContentX,
+        shipToY
+      );
+      shipToY += 4;
+      pdf.text(invoice.client.address.country, shipToContentX, shipToY);
+    }
+
+    currentY += 15;
+
+    // Invoice details section
+    const detailsStartY = currentY;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Invoice No:", leftColX, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.invoiceNumber, leftColX + 25, currentY);
+    currentY += 5;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Ref:", leftColX, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.quotationNumber, leftColX + 25, currentY);
+    currentY += 5;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("PO No:", leftColX, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.purchaseOrderNumber, leftColX + 25, currentY);
+    currentY += 5;
+
+    // Date section on the right
+    let dateY = detailsStartY;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Date:", shipToContentX, dateY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(new Date(invoice.createdAt).toLocaleDateString(), shipToContentX + 15, dateY);
+    dateY += 5;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Due Date:", shipToContentX, dateY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(new Date(invoice.dueDate).toLocaleDateString(), shipToContentX + 20, dateY);
+
     currentY += 10;
-    const totalsStartX = pageWidth - 80;
-    const correctTotalsWidth = 60;
+
+    // Items table header
+    const colWidths = [15, 95, 15, 15, 20, 20];
+    const colPositions: number[] = [];
+    let totalWidth = 0;
+    for (let i = 0; i < colWidths.length; i++) {
+      colPositions.push(margin + totalWidth);
+      totalWidth += colWidths[i];
+    }
+
+    // Table header with background
+    pdf.setFillColor(70, 130, 180);
+    pdf.rect(margin, currentY, contentWidth, 8, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+
+    pdf.text("SL", colPositions[0] + 2, currentY + 5.5);
+    pdf.text("DESCRIPTION OF GOODS", colPositions[1] + 2, currentY + 5.5);
+    pdf.text("QTY", colPositions[2] + 2, currentY + 5.5);
+    pdf.text("UNIT", colPositions[3] + 2, currentY + 5.5);
+    pdf.text("RATE", colPositions[4] + 2, currentY + 5.5);
+    pdf.text("AMOUNT", colPositions[5] + 2, currentY + 5.5);
+
+    currentY += 8;
+
+    // Items with detailed specifications
+    pdf.setTextColor(0, 0, 0);
+    invoice.items.forEach((item, index) => {
+      // Extract product details
+      const brandText = item.product?.brand || '';
+      const modelText = item.product?.modelName || '';
+      
+      // Extract specifications
+      const specsLines: string[] = [];
+      if ((item.product as any)?.specifications) {
+        Object.entries((item.product as any).specifications).forEach(([key, value]) => {
+          if (value) {
+            let formattedValue = value;
+            if (typeof value === 'object' && value !== null) {
+              formattedValue = JSON.stringify(value);
+            }
+            specsLines.push(`${key}: ${formattedValue}`);
+          }
+        });
+      }
+
+      // Build comprehensive item description
+      let fullSpecs = "";
+      if (brandText) fullSpecs += `${brandText} `;
+      if (modelText) fullSpecs += `${modelText}`;
+
+      // Calculate dynamic row height
+      const baseHeight = 18;
+      const lineHeight = 3;
+      let contentLines = 1; // Item name
+      if (fullSpecs.trim()) contentLines += 1; // Brand/model line
+      contentLines += specsLines.length; // All specification lines
+
+      const rowHeight = Math.max(baseHeight, contentLines * lineHeight + 6);
+
+      // Alternate row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(250, 250, 250);
+        pdf.rect(margin, currentY, contentWidth, rowHeight, "F");
+      }
+
+      // Check if we need a new page for this row
+      if (currentY + rowHeight > pageHeight - 60) { // Leave space for totals and footer
+        pdf.addPage();
+        currentY = margin;
+        
+        // Re-draw table header on new page
+        pdf.setFillColor(70, 130, 180);
+        pdf.rect(margin, currentY, contentWidth, 8, "F");
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+
+        pdf.text("SL", colPositions[0] + 2, currentY + 5.5);
+        pdf.text("DESCRIPTION OF GOODS", colPositions[1] + 2, currentY + 5.5);
+        pdf.text("QTY", colPositions[2] + 2, currentY + 5.5);
+        pdf.text("UNIT", colPositions[3] + 2, currentY + 5.5);
+        pdf.text("RATE", colPositions[4] + 2, currentY + 5.5);
+        pdf.text("AMOUNT", colPositions[5] + 2, currentY + 5.5);
+
+        currentY += 8;
+        pdf.setTextColor(0, 0, 0);
+      }
+
+      // Alternate row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(250, 250, 250);
+        pdf.rect(margin, currentY, contentWidth, rowHeight, "F");
+      }
+
+      // Draw borders
+      pdf.setDrawColor(200, 200, 200);
+      for (let i = 0; i <= colWidths.length; i++) {
+        const x = i === colWidths.length ? margin + contentWidth : colPositions[i];
+        pdf.line(x, currentY, x, currentY + rowHeight);
+      }
+      pdf.line(margin, currentY, margin + contentWidth, currentY);
+      pdf.line(margin, currentY + rowHeight, margin + contentWidth, currentY + rowHeight);
+
+      // Row content
+      pdf.setFontSize(7);
+
+      // SL
+      pdf.setFont("helvetica", "normal");
+      pdf.text((index + 1).toString(), colPositions[0] + 2, currentY + 4);
+
+      // Description
+      let descY = currentY + 4;
+      pdf.setFont("helvetica", "bold");
+      pdf.text(item.productName, colPositions[1] + 2, descY);
+      descY += lineHeight;
+
+      if (fullSpecs.trim()) {
+        pdf.setFont("helvetica", "normal");
+        pdf.text(fullSpecs, colPositions[1] + 2, descY);
+        descY += lineHeight;
+      }
+
+      // Specifications
+      pdf.setFont("helvetica", "normal");
+      specsLines.forEach((spec: string) => {
+        pdf.text(spec, colPositions[1] + 2, descY);
+        descY += lineHeight;
+      });
+
+      // Quantity, Unit, Rate, Amount
+      pdf.setFont("helvetica", "normal");
+      pdf.text(item.quantity.toString(), colPositions[2] + 2, currentY + 4);
+      pdf.text(item.unit, colPositions[3] + 2, currentY + 4);
+      pdf.text(item.sellingPrice.toFixed(0), colPositions[4] + 2, currentY + 4);
+      pdf.text(item.lineTotal.toFixed(0), colPositions[5] + 2, currentY + 4);
+
+      currentY += rowHeight;
+    });
+
+    // Table footer with totals - align with table end
+    currentY += 2;
+    const totalsStartX = colPositions[3]; // Start from Quantity column (position 3)
+    const tableEndX = margin + contentWidth; // Actual table end position
+    const correctTotalsWidth = tableEndX - totalsStartX; // Calculate correct width
 
     // Subtotal
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5, "F");
+    pdf.setDrawColor(0, 0, 0);
     pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
+
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
     pdf.text("SUBTOTAL", totalsStartX + 2, currentY + 3.5);
     pdf.text(
@@ -256,7 +531,7 @@ export default function InvoiceDetailPage() {
     );
     currentY += 5;
 
-    // Discount
+    // Always show discount line
     pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
     pdf.text("DISCOUNT", totalsStartX + 2, currentY + 3.5);
     pdf.text(
@@ -267,8 +542,10 @@ export default function InvoiceDetailPage() {
     );
     currentY += 5;
 
-    // Subtotal less discount
+    // Calculate subtotal after discount
     const subtotalAfterDiscount = invoice.subtotal - (invoice.discount || 0);
+    
+    // Show "SUBTOTAL LESS DISCOUNT" line
     pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
     pdf.text("SUBTOTAL LESS DISCOUNT", totalsStartX + 2, currentY + 3.5);
     pdf.text(
@@ -279,10 +556,14 @@ export default function InvoiceDetailPage() {
     );
     currentY += 5;
 
-    // VAT Rate
+    // VAT Rate line
     if (invoice.taxRate > 0) {
       pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
-      pdf.text("VAT RATE", totalsStartX + 2, currentY + 3.5);
+      pdf.text(
+        "VAT RATE",
+        totalsStartX + 2,
+        currentY + 3.5
+      );
       pdf.text(
         `${invoice.taxRate.toFixed(1)}%`,
         totalsStartX + correctTotalsWidth - 2,
@@ -291,7 +572,7 @@ export default function InvoiceDetailPage() {
       );
       currentY += 5;
 
-      // Total VAT
+      // Total VAT line
       pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
       pdf.text("TOTAL VAT", totalsStartX + 2, currentY + 3.5);
       pdf.text(
@@ -303,7 +584,7 @@ export default function InvoiceDetailPage() {
       currentY += 5;
     }
 
-    // Transportation cost
+    // Shipping/Handling line
     if ((invoice.transportationCost || 0) > 0) {
       pdf.rect(totalsStartX, currentY, correctTotalsWidth, 5);
       pdf.text("SHIPPING/HANDLING", totalsStartX + 2, currentY + 3.5);
@@ -320,6 +601,7 @@ export default function InvoiceDetailPage() {
     pdf.setFillColor(70, 130, 180);
     pdf.rect(totalsStartX, currentY, correctTotalsWidth, 6, "F");
     pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(10);
     pdf.setFont("helvetica", "bold");
     pdf.text("Invoice Total", totalsStartX + 2, currentY + 4);
     pdf.text(
@@ -328,62 +610,104 @@ export default function InvoiceDetailPage() {
       currentY + 4,
       { align: "right" }
     );
-    currentY += 10;
 
-    // Terms and Instructions
-    if (invoice.termsAndInstructions) {
-      pdf.setTextColor(0, 0, 0);
+    currentY += 15;
+
+    // Terms & Instructions - check if we need a new page before adding terms
+    const termsText =
+      invoice.termsAndInstructions ||
+      "50% Advance with the Work order, the rest after delivery\nDelivery time: Supply 3-5 days After Getting the PO\nThe Price included 5% AIT & 10% VAT";
+
+    const termsLines = termsText.split("\n");
+    const termsHeight = 12 + (termsLines.length * 3) + 8; // Title + lines + spacing
+    const footerHeight = 40; // Space needed for footer
+    const requiredSpace = termsHeight + footerHeight;
+
+    // Check if we need a new page for terms and footer
+    if (currentY + requiredSpace > pageHeight) {
+      pdf.addPage();
+      currentY = margin;
+    }
+
+    // Terms & Instructions
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(8);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Terms & Instructions", margin, currentY);
+    currentY += 4;
+
+    pdf.setFontSize(7);
+    pdf.setFont("helvetica", "normal");
+
+    // Handle multi-line terms text
+    termsLines.forEach((line, index) => {
+      pdf.text(line, margin, currentY + index * 3);
+    });
+    currentY += termsLines.length * 3;
+    currentY += 8;
+
+    // Single footer section
+    const footerY = Math.max(currentY + 10, pageHeight - 35);
+
+    // Right side - Single authorization section
+    pdf.setFontSize(7);
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Authorized by", pageWidth - 50, footerY);
+
+    // Only show authorization details if they exist in settings
+    if (
+      settings?.quotation?.authorizedBy?.name &&
+      settings?.quotation?.authorizedBy?.designation
+    ) {
+      const authorizedName = settings.quotation.authorizedBy.name;
+      const authorizedDesignation =
+        settings.quotation.authorizedBy.designation;
+
+      // Add more space for signature (increased gap from +4 to +12)
       pdf.setFont("helvetica", "bold");
-      pdf.text("Terms & Instructions", margin, currentY);
-      currentY += 7;
+      pdf.text(authorizedName, pageWidth - 50, footerY + 12);
       pdf.setFont("helvetica", "normal");
-      const termsLines = pdf.splitTextToSize(invoice.termsAndInstructions, pageWidth - 2 * margin);
-      pdf.text(termsLines, margin, currentY);
+      pdf.setFontSize(6);
+      pdf.text(authorizedDesignation, pageWidth - 50, footerY + 15);
     }
 
-    // Save PDF
+    // Bottom center - Thank you message
+    pdf.setFontSize(6);
+    pdf.text("Thank you for your business!", pageWidth / 2, footerY + 15, {
+      align: "center",
+    });
+
+    // Save the PDF
     pdf.save(`${invoice.invoiceNumber}.pdf`);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "draft":
-        return "bg-gray-100 text-gray-800";
-      case "sent":
-        return "bg-blue-100 text-blue-800";
-      case "paid":
-        return "bg-green-100 text-green-800";
-      case "overdue":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `BDT ${amount.toLocaleString()}`;
-  };
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("Failed to generate PDF. Please try again.");
+  } finally {
+    setIsGeneratingPDF(false);
+  }
+};
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-8">Loading invoice...</div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading invoice...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-8">
-          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">Invoice not found</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invoice Not Found</h1>
+          <p className="text-gray-600 mb-6">
+            The invoice you're looking for doesn't exist or has been deleted.
+          </p>
           <Link href="/invoices">
             <Button className="mt-4">Back to Invoices</Button>
           </Link>

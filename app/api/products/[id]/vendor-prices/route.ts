@@ -4,15 +4,16 @@ import { Product } from '@/lib/models';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
+    const { id } = await params;
     const body = await request.json();
-    const { vendor, price, currency, validUntil, minimumQuantity, deliveryTime } = body;
+    const { vendorId, price, validUntil } = body;
     
-    const product = await Product.findById(params.id);
+    const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -22,16 +23,16 @@ export async function POST(
     
     // Check if vendor price already exists
     const existingPriceIndex = product.vendorPrices.findIndex(
-      (vp: any) => vp.vendor.toString() === vendor
+      (vp: any) => vp.vendor.toString() === vendorId
     );
     
     const newVendorPrice = {
-      vendor,
+      vendor: vendorId,
       price,
-      currency: currency || 'BDT',
+      currency: body.currency || 'BDT',
       validUntil: new Date(validUntil),
-      minimumQuantity: minimumQuantity || 1,
-      deliveryTime: deliveryTime || '',
+      minimumQuantity: body.minimumQuantity || 1,
+      deliveryTime: body.deliveryTime || '',
       lastUpdated: new Date(),
     };
     
@@ -60,13 +61,14 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const product = await Product.findById(params.id)
-      .populate('vendorPrices.vendor')
+    const { id } = await params;
+    const product = await Product.findById(id)
+      .populate('vendorPrices.vendor', 'companyName')
       .select('vendorPrices');
     
     if (!product) {

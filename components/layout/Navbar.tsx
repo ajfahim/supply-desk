@@ -12,6 +12,7 @@ import {
   Plus,
   Settings,
   Users,
+  FolderOpen,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +20,7 @@ import { useState } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Documents", href: "/documents", icon: FolderOpen },
   { name: "Quotations", href: "/quotations", icon: FileText },
   { name: "Invoices", href: "/invoices", icon: FileText },
   { name: "Products", href: "/products", icon: Package },

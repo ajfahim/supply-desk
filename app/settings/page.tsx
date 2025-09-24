@@ -13,6 +13,8 @@ import {
   Calculator,
   Save,
   Loader2,
+  Upload,
+  X,
 } from "lucide-react";
 
 interface CompanySettings {
@@ -51,6 +53,7 @@ interface PricingSettings {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string>("");
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
     companyName: "Steelroot Traders",
     address: {
@@ -88,12 +91,46 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
 
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        alert("File size must be less than 2MB");
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        setLogoPreview(base64String);
+        setCompanySettings({
+          ...companySettings,
+          logo: base64String,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoPreview("");
+    setCompanySettings({
+      ...companySettings,
+      logo: "",
+    });
+  };
+
   const fetchSettings = async () => {
     try {
       const response = await fetch("/api/settings");
       if (response.ok) {
         const data = await response.json();
-        if (data.company) setCompanySettings(data.company);
+        if (data.company) {
+          setCompanySettings(data.company);
+          if (data.company.logo) {
+            setLogoPreview(data.company.logo);
+          }
+        }
         if (data.quotation) {
           setQuotationSettings({
             authorizedBy: {
@@ -317,6 +354,63 @@ export default function SettingsPage() {
                       })
                     }
                   />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="logo">Company Logo</Label>
+                <div className="space-y-4">
+                  {logoPreview ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={logoPreview}
+                        alt="Company Logo"
+                        className="h-20 w-auto border rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={removeLogo}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-2">
+                        <Label htmlFor="logoUpload" className="cursor-pointer">
+                          <span className="text-sm text-gray-600">
+                            Click to upload logo or drag and drop
+                          </span>
+                          <br />
+                          <span className="text-xs text-gray-500">
+                            PNG, JPG up to 2MB
+                          </span>
+                        </Label>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    id="logoUpload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  {!logoPreview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('logoUpload')?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Logo
+                    </Button>
+                  )}
                 </div>
               </div>
 

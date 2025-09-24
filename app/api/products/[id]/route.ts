@@ -4,12 +4,13 @@ import { Product } from '@/lib/models';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const product = await Product.findById(params.id)
+    const { id } = await params;
+    const product = await Product.findById(id)
       .populate('category', 'name')
       .populate('vendorPrices.vendor', 'companyName');
     
@@ -32,17 +33,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
+    const { id } = await params;
     const body = await request.json();
-    const product = await Product.findByIdAndUpdate(
-      params.id,
-      body,
-      { new: true, runValidators: true }
-    )
+    const product = await Product.findByIdAndUpdate(id, body, {
+      new: true, runValidators: true
+    })
       .populate('category', 'name')
       .populate('vendorPrices.vendor', 'companyName');
     
@@ -65,12 +65,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const product = await Product.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const product = await Product.findByIdAndDelete(id);
     
     if (!product) {
       return NextResponse.json(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import Vendor from '@/lib/models/Vendor';
 import { PricingCalculator } from '@/lib/pricing';
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Filter out expired vendor prices and add vendor names
     const currentDate = new Date();
-    const validVendorPrices = product.vendorPrices
+    const validVendorPrices = (product as any).vendorPrices
       .filter((vp: any) => new Date(vp.validUntil) > currentDate)
       .map((vp: any) => ({
         ...vp,
@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       product: {
-        _id: product._id,
-        name: product.name,
-        brand: product.brand,
-        modelName: product.modelName
+        _id: (product as any)._id,
+        name: (product as any).name,
+        brand: (product as any).brand,
+        modelName: (product as any).modelName
       },
       comparisons,
       profitMargin,

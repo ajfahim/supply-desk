@@ -4,12 +4,13 @@ import { Product } from '@/lib/models';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; vendorId: string } }
+  { params }: { params: Promise<{ id: string; vendorId: string }> }
 ) {
   try {
     await connectDB();
     
-    const product = await Product.findById(params.id);
+    const { id, vendorId } = await params;
+    const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -19,7 +20,7 @@ export async function DELETE(
     
     // Remove vendor price
     product.vendorPrices = product.vendorPrices.filter(
-      (vp: any) => vp.vendor.toString() !== params.vendorId
+      (vp: any) => vp.vendor.toString() !== vendorId
     );
     
     await product.save();
@@ -36,15 +37,16 @@ export async function DELETE(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; vendorId: string } }
+  { params }: { params: Promise<{ id: string; vendorId: string }> }
 ) {
   try {
     await connectDB();
     
+    const { id, vendorId } = await params;
     const body = await request.json();
-    const { price, currency, validUntil, minimumQuantity, deliveryTime } = body;
+    const { price, validUntil } = body;
     
-    const product = await Product.findById(params.id);
+    const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -54,25 +56,24 @@ export async function PUT(
     
     // Find and update vendor price
     const vendorPriceIndex = product.vendorPrices.findIndex(
-      (vp: any) => vp.vendor.toString() === params.vendorId
+      (vp: any) => vp.vendor.toString() === vendorId
     );
     
     if (vendorPriceIndex === -1) {
-      return NextResponse.json(
-        { error: 'Vendor price not found' },
-        { status: 404 }
-      );
+      product.vendorPrices.push({
+        vendor: vendorId,
+        price,
+        validUntil: validUntil ? new Date(validUntil) : undefined,
+        updatedAt: new Date()
+      });
+    } else {
+      product.vendorPrices[vendorPriceIndex] = {
+        ...product.vendorPrices[vendorPriceIndex],
+        price,
+        validUntil: validUntil ? new Date(validUntil) : undefined,
+        updatedAt: new Date()
+      };
     }
-    
-    product.vendorPrices[vendorPriceIndex] = {
-      ...product.vendorPrices[vendorPriceIndex],
-      price,
-      currency: currency || 'BDT',
-      validUntil: new Date(validUntil),
-      minimumQuantity: minimumQuantity || 1,
-      deliveryTime: deliveryTime || '',
-      lastUpdated: new Date(),
-    };
     
     await product.save();
     

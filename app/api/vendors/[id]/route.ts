@@ -4,12 +4,13 @@ import { Vendor } from '@/lib/models';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const vendor = await Vendor.findById(params.id);
+    const { id } = await params;
+    const vendor = await Vendor.findById(id);
     
     if (!vendor) {
       return NextResponse.json(
@@ -30,17 +31,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
+    const { id } = await params;
     const body = await request.json();
-    const vendor = await Vendor.findByIdAndUpdate(
-      params.id,
-      body,
-      { new: true, runValidators: true }
-    );
+    const vendor = await Vendor.findByIdAndUpdate(id, body, {
+      new: true, runValidators: true
+    });
     
     if (!vendor) {
       return NextResponse.json(
@@ -61,12 +61,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const vendor = await Vendor.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const vendor = await Vendor.findByIdAndDelete(id);
     
     if (!vendor) {
       return NextResponse.json(

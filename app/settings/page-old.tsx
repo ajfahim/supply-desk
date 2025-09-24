@@ -6,7 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Building2,
   FileText,
@@ -140,7 +148,7 @@ export default function SettingsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-64">
           <div className="text-center">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-spin" />
+            <Loader2 className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-spin" />
             <p className="text-gray-600">Loading settings...</p>
           </div>
         </div>
@@ -383,12 +391,13 @@ export default function SettingsPage() {
                 <Label htmlFor="currency">Currency</Label>
                 <Select
                   value={pricingSettings.currency || "BDT"}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) => {
                     setPricingSettings({
                       ...pricingSettings,
                       currency: value,
                     })
                   }
+                }
                 >
                   <SelectTrigger>
                     <SelectValue />
