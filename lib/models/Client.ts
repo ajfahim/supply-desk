@@ -111,4 +111,4 @@ ClientSchema.index({ 'contacts.email': 1 });
 ClientSchema.index({ industry: 1 });
 ClientSchema.index({ isActive: 1 });
 
-export default mongoose.models.Client || mongoose.model<IClient>('Client', ClientSchema);
+export const Client = mongoose.models.Client || mongoose.model<IClient>('Client', ClientSchema);

@@ -82,4 +82,4 @@ VendorSchema.index({ email: 1 });
 VendorSchema.index({ specialties: 1 });
 VendorSchema.index({ isActive: 1 });
 
-export default mongoose.models.Vendor || mongoose.model<IVendor>('Vendor', VendorSchema);
+export const Vendor = mongoose.models.Vendor || mongoose.model<IVendor>('Vendor', VendorSchema);

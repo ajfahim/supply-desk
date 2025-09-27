@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Product from '@/lib/models/Product';
-import Vendor from '@/lib/models/Vendor';
+import { Product, Vendor } from '@/lib/models';
 import { PricingCalculator } from '@/lib/pricing';
 
 export async function POST(request: NextRequest) {

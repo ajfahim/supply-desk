@@ -1,11 +1,13 @@
 // Export all models for easy importing
 export { default as Quotation } from './Quotation';
-export { default as Client } from './Client';
-export { default as Product } from './Product';
-export { default as Category } from './Category';
-export { default as Vendor } from './Vendor';
-export { default as Settings } from './Settings';
-export { default as Invoice } from './Invoice';
+export { Category } from './Category';
+export { Chalan } from './Chalan';
+export { Client } from './Client';
+export { Invoice } from './Invoice';
+export { Product } from './Product';
+export { Settings } from './Settings';
+export { User } from './User';
+export { Vendor } from './Vendor';
 
 // Export types
 export type { ICategory } from './Category';
@@ -16,3 +18,4 @@ export type { IRequirement, IRequirementItem } from './Requirement';
 export type { IQuotation, IQuotationItem, IProfitSummary } from './Quotation';
 export type { ISettings } from './Settings';
 export type { IInvoice, IInvoiceItem } from './Invoice';
+export type { IUser } from './User';

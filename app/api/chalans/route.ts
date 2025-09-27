@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Chalan from '@/lib/models/Chalan';
-import Client from '@/lib/models/Client';
+import { Chalan, Client } from '@/lib/models';
 
 export async function GET(request: NextRequest) {
   try {

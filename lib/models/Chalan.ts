@@ -172,4 +172,4 @@ const ChalanSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.models.Chalan || mongoose.model<IChalan>('Chalan', ChalanSchema);
+export const Chalan = mongoose.models.Chalan || mongoose.model<IChalan>('Chalan', ChalanSchema);

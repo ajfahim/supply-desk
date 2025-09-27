@@ -12,11 +12,13 @@ import {
   Users,
   FolderOpen,
   Truck,
+  Shield,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
@@ -31,9 +33,14 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: "User Management", href: "/users", icon: Shield },
+];
+
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <div
@@ -50,6 +57,33 @@ export default function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors group ${
+                  isActive
+                    ? "bg-blue-100 text-blue-900"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span
+                  className={`ml-3 transition-all duration-300 ${
+                    isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
+                  } overflow-hidden whitespace-nowrap`}
+                >
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+          
+          {/* Admin Navigation */}
+          {session?.user?.role === 'super_admin' && adminNavigation.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             

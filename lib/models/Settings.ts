@@ -71,4 +71,4 @@ const SettingsSchema = new Schema<ISettings>({
   strict: true,
 });
 
-export default mongoose.models.Settings || mongoose.model<ISettings>('Settings', SettingsSchema);
+export const Settings = mongoose.models.Settings || mongoose.model<ISettings>('Settings', SettingsSchema);

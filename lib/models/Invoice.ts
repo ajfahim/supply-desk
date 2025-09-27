@@ -241,4 +241,4 @@ InvoiceSchema.index({
   purchaseOrderNumber: 'text',
 });
 
-export default mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);
+export const Invoice = mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);
