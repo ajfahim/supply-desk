@@ -425,9 +425,9 @@ export default function NewQuotationPage() {
     }
 
     const afterDiscount = subtotal - discountAmount;
-    const afterTransportation = afterDiscount + transportationCost;
-    const taxAmount = (afterTransportation * taxRate) / 100;
-    const grandTotal = afterTransportation + taxAmount;
+    // Tax should only be calculated on product prices, not transportation cost
+    const taxAmount = (afterDiscount * taxRate) / 100;
+    const grandTotal = afterDiscount + transportationCost + taxAmount;
 
     return {
       subtotal,

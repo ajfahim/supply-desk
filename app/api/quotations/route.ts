@@ -100,9 +100,9 @@ export async function POST(request: NextRequest) {
     }
 
     const afterDiscount = subtotal - discountAmount;
-    const afterTransportation = afterDiscount + transportationCost;
-    const taxAmount = (afterTransportation * taxRate) / 100;
-    const grandTotal = afterTransportation + taxAmount;
+    // Tax should only be calculated on product prices, not transportation cost
+    const taxAmount = (afterDiscount * taxRate) / 100;
+    const grandTotal = afterDiscount + transportationCost + taxAmount;
 
     // Calculate profit summary
     const totalCost = marginByItem.reduce((sum, item) => sum + item.cost, 0);

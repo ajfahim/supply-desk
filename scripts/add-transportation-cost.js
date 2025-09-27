@@ -42,9 +42,9 @@ async function addTransportationCostField() {
         const taxRate = quotation.taxRate || 0;
         
         const afterDiscount = subtotal - discount;
-        const afterTransportation = afterDiscount + transportationCost;
-        const taxAmount = (afterTransportation * taxRate) / 100;
-        const grandTotal = afterTransportation + taxAmount;
+        // Tax should only be calculated on product prices, not transportation cost
+        const taxAmount = (afterDiscount * taxRate) / 100;
+        const grandTotal = afterDiscount + transportationCost + taxAmount;
         
         await collection.updateOne(
           { _id: quotation._id },
