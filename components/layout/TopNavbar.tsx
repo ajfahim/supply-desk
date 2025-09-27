@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileText, Plus, Truck, User, ChevronDown, LogOut } from "lucide-react";
+import { FileText, Plus, Truck, User, ChevronDown, LogOut, BarChart3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -59,6 +59,12 @@ export default function TopNavbar() {
                 <Button className="bg-orange-600 hover:bg-orange-700">
                   <Truck className="w-4 h-4 mr-2" />
                   New Delivery Note
+                </Button>
+              </Link>
+              <Link href="/comparisons/new">
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Product Comparison
                 </Button>
               </Link>
               
