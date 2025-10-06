@@ -13,6 +13,7 @@ import {
   FolderOpen,
   Truck,
   Shield,
+  FolderTree,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +28,7 @@ const navigation = [
   { name: "Invoices", href: "/invoices", icon: FileText },
   { name: "Chalans", href: "/chalans", icon: Truck },
   { name: "Products", href: "/products", icon: Package },
+  { name: "Categories", href: "/categories", icon: FolderTree },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Vendors", href: "/vendors", icon: Building2 },
   { name: "Pricing", href: "/pricing", icon: Calculator },

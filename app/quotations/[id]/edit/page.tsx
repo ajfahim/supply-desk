@@ -672,11 +672,11 @@ export default function EditQuotationPage() {
                     Add Product
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="min-w-[50vw] overflow-auto overflow-x-hidden">
+                <DialogContent className="min-w-[50vw] max-h-[80vh] overflow-hidden">
                   <DialogHeader>
                     <DialogTitle>Select Product</DialogTitle>
                   </DialogHeader>
-                  <div className="flex flex-col h-full space-y-4">
+                  <div className="flex flex-col max-h-[70vh] space-y-4">
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       <Search className="w-4 h-4 text-gray-400" />
                       <Input
@@ -685,47 +685,52 @@ export default function EditQuotationPage() {
                         onChange={(e) => setProductSearchTerm(e.target.value)}
                       />
                     </div>
-                    <div className="flex-1 min-h-[50vh] border rounded-md">
-                      <Table>
+                    <div className="flex-1 max-h-[55vh] border rounded-md overflow-auto">
+                      <Table className="min-w-[900px] table-fixed">
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-[25%]">Product</TableHead>
-                            <TableHead className="w-[20%]">
+                            <TableHead className="w-[30%] min-w-[240px]">Product</TableHead>
+                            <TableHead className="w-[16%] min-w-[120px]">
                               Brand/Model
                             </TableHead>
-                            <TableHead className="w-[20%]">Vendor</TableHead>
-                            <TableHead className="w-[15%]">Price</TableHead>
-                            <TableHead className="w-[20%]">Action</TableHead>
+                            <TableHead className="w-[16%] min-w-[120px]">Vendor</TableHead>
+                            <TableHead className="w-[12%] min-w-[100px]">Price</TableHead>
+                            <TableHead className="w-[26%] min-w-[200px]">Action</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {uniqueProductsWithBestPrice.length > 0 ? (
                             uniqueProductsWithBestPrice.map((product) => (
                               <TableRow key={product._id}>
-                                <TableCell className="w-[25%]">
-                                  <div
-                                    className="font-medium truncate"
+                                <TableCell className="w-[30%] min-w-[240px] max-w-[240px]">
+                                  <div 
+                                    className="font-medium text-sm truncate cursor-help" 
                                     title={product.name}
                                   >
                                     {product.name}
                                   </div>
                                 </TableCell>
-                                <TableCell className="w-[20%]">
-                                  <div
-                                    className="truncate"
-                                    title={`${product.brand} ${product.modelName}`}
-                                  >
-                                    {product.brand} {product.modelName}
+                                <TableCell className="w-[16%] min-w-[120px] max-w-[120px]">
+                                  <div className="leading-tight">
+                                    <div 
+                                      className="font-medium text-sm truncate cursor-help"
+                                      title={product.brand}
+                                    >
+                                      {product.brand}
+                                    </div>
+                                    <div 
+                                      className="text-xs text-gray-600 truncate cursor-help"
+                                      title={product.modelName}
+                                    >
+                                      {product.modelName}
+                                    </div>
                                   </div>
                                 </TableCell>
-                                <TableCell className="w-[20%]">
+                                <TableCell className="w-[16%] min-w-[120px] max-w-[120px]">
                                   <div className="flex flex-col">
-                                    <div
-                                      className="truncate font-medium"
-                                      title={
-                                        product.lowestPriceVendor?.vendor
-                                          .companyName
-                                      }
+                                    <div 
+                                      className="font-medium text-sm truncate cursor-help"
+                                      title={product.lowestPriceVendor?.vendor.companyName || "No vendor"}
                                     >
                                       {product.lowestPriceVendor?.vendor
                                         .companyName || "No vendor"}
@@ -741,9 +746,9 @@ export default function EditQuotationPage() {
                                     )}
                                   </div>
                                 </TableCell>
-                                <TableCell className="w-[15%]">
+                                <TableCell className="w-[12%] min-w-[100px] max-w-[100px]">
                                   <div className="flex flex-col">
-                                    <div className="font-medium text-green-600">
+                                    <div className="font-medium text-green-600 text-sm">
                                       {product.lowestPriceVendor?.price.toLocaleString() ||
                                         "N/A"}{" "}
                                       {product.lowestPriceVendor?.currency ||
@@ -754,7 +759,7 @@ export default function EditQuotationPage() {
                                     </div>
                                   </div>
                                 </TableCell>
-                                <TableCell className="w-[20%]">
+                                <TableCell className="w-[26%] min-w-[200px] max-w-[200px]">
                                   <div className="flex gap-2">
                                     <Button
                                       size="sm"

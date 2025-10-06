@@ -2,6 +2,7 @@
 
 import Sidebar from "./Sidebar";
 import TopNavbar from "./TopNavbar";
+import { Toaster } from "sonner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }
