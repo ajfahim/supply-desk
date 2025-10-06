@@ -7,6 +7,7 @@ export async function GET() {
     await connectDB();
     
     const categories = await Category.find({ isActive: true })
+      .populate('parentCategory', 'name')
       .sort({ name: 1 });
     
     return NextResponse.json(categories);

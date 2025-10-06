@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Product } from '@/lib/models';
+import mongoose from 'mongoose';
 
 export async function POST(
   request: NextRequest,
@@ -11,7 +12,44 @@ export async function POST(
     
     const { id } = await params;
     const body = await request.json();
-    const { vendorId, price, validUntil } = body;
+    const { vendor: vendorId, price, validUntil } = body;
+    
+    // Validate required fields
+    if (!vendorId) {
+      return NextResponse.json(
+        { error: 'Vendor ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!price || price <= 0) {
+      return NextResponse.json(
+        { error: 'Valid price is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!validUntil) {
+      return NextResponse.json(
+        { error: 'Valid until date is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(vendorId)) {
+      return NextResponse.json(
+        { error: 'Invalid vendor ID' },
+        { status: 400 }
+      );
+    }
     
     const product = await Product.findById(id);
     if (!product) {
@@ -27,11 +65,11 @@ export async function POST(
     );
     
     const newVendorPrice = {
-      vendor: vendorId,
-      price,
+      vendor: new mongoose.Types.ObjectId(vendorId),
+      price: Number(price),
       currency: body.currency || 'BDT',
       validUntil: new Date(validUntil),
-      minimumQuantity: body.minimumQuantity || 1,
+      minimumQuantity: Number(body.minimumQuantity) || 1,
       deliveryTime: body.deliveryTime || '',
       lastUpdated: new Date(),
     };
@@ -52,8 +90,24 @@ export async function POST(
     return NextResponse.json(product.vendorPrices);
   } catch (error) {
     console.error('Error adding/updating vendor price:', error);
+    
+    // Handle validation errors specifically
+    if (error instanceof Error && error.name === 'ValidationError') {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed', 
+          details: error.message,
+          validationErrors: (error as any).errors 
+        },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to add/update vendor price' },
+      { 
+        error: 'Failed to add/update vendor price',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

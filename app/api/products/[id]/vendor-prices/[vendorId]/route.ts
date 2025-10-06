@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Product } from '@/lib/models';
+import mongoose from 'mongoose';
 
 export async function DELETE(
   request: NextRequest,
@@ -10,6 +11,22 @@ export async function DELETE(
     await connectDB();
     
     const { id, vendorId } = await params;
+    
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(vendorId)) {
+      return NextResponse.json(
+        { error: 'Invalid vendor ID' },
+        { status: 400 }
+      );
+    }
+    
     const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json(
@@ -46,6 +63,29 @@ export async function PUT(
     const body = await request.json();
     const { price, validUntil } = body;
     
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(vendorId)) {
+      return NextResponse.json(
+        { error: 'Invalid vendor ID' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate required fields
+    if (!price || price <= 0) {
+      return NextResponse.json(
+        { error: 'Valid price is required' },
+        { status: 400 }
+      );
+    }
+    
     const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json(
@@ -61,17 +101,23 @@ export async function PUT(
     
     if (vendorPriceIndex === -1) {
       product.vendorPrices.push({
-        vendor: vendorId,
-        price,
-        validUntil: validUntil ? new Date(validUntil) : undefined,
-        updatedAt: new Date()
+        vendor: new mongoose.Types.ObjectId(vendorId),
+        price: Number(price),
+        currency: body.currency || 'BDT',
+        validUntil: validUntil ? new Date(validUntil) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
+        minimumQuantity: Number(body.minimumQuantity) || 1,
+        deliveryTime: body.deliveryTime || '',
+        lastUpdated: new Date()
       });
     } else {
       product.vendorPrices[vendorPriceIndex] = {
         ...product.vendorPrices[vendorPriceIndex],
-        price,
-        validUntil: validUntil ? new Date(validUntil) : undefined,
-        updatedAt: new Date()
+        price: Number(price),
+        currency: body.currency || product.vendorPrices[vendorPriceIndex].currency,
+        validUntil: validUntil ? new Date(validUntil) : product.vendorPrices[vendorPriceIndex].validUntil,
+        minimumQuantity: body.minimumQuantity ? Number(body.minimumQuantity) : product.vendorPrices[vendorPriceIndex].minimumQuantity,
+        deliveryTime: body.deliveryTime !== undefined ? body.deliveryTime : product.vendorPrices[vendorPriceIndex].deliveryTime,
+        lastUpdated: new Date()
       };
     }
     
