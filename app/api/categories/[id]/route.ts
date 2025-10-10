@@ -5,19 +5,21 @@ import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    const { id } = await params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid category ID' },
         { status: 400 }
       );
     }
 
-    const category = await Category.findById(params.id)
+    const category = await Category.findById(id)
       .populate('parentCategory', 'name');
     
     if (!category) {

@@ -363,11 +363,65 @@ export default function ProductsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        {/* Count/Quantity Units */}
                         <SelectItem value="pcs">Pieces</SelectItem>
-                        <SelectItem value="kg">Kilograms</SelectItem>
-                        <SelectItem value="m">Meters</SelectItem>
-                        <SelectItem value="l">Liters</SelectItem>
                         <SelectItem value="set">Set</SelectItem>
+                        <SelectItem value="pair">Pair</SelectItem>
+                        <SelectItem value="dozen">Dozen</SelectItem>
+                        
+                        {/* Length Units */}
+                        <SelectItem value="mm">Millimeters</SelectItem>
+                        <SelectItem value="cm">Centimeters</SelectItem>
+                        <SelectItem value="m">Meters</SelectItem>
+                        <SelectItem value="km">Kilometers</SelectItem>
+                        <SelectItem value="inch">Inches</SelectItem>
+                        <SelectItem value="ft">Feet</SelectItem>
+                        <SelectItem value="yard">Yards</SelectItem>
+                        
+                        {/* Area Units */}
+                        <SelectItem value="sqmm">Square Millimeters</SelectItem>
+                        <SelectItem value="sqcm">Square Centimeters</SelectItem>
+                        <SelectItem value="sqm">Square Meters</SelectItem>
+                        <SelectItem value="sqkm">Square Kilometers</SelectItem>
+                        <SelectItem value="sqin">Square Inches</SelectItem>
+                        <SelectItem value="sqft">Square Feet</SelectItem>
+                        <SelectItem value="sqyard">Square Yards</SelectItem>
+                        <SelectItem value="acre">Acres</SelectItem>
+                        
+                        {/* Volume Units */}
+                        <SelectItem value="ml">Milliliters</SelectItem>
+                        <SelectItem value="l">Liters</SelectItem>
+                        <SelectItem value="gallon">Gallons</SelectItem>
+                        <SelectItem value="cuft">Cubic Feet</SelectItem>
+                        <SelectItem value="cum">Cubic Meters</SelectItem>
+                        
+                        {/* Weight Units */}
+                        <SelectItem value="g">Grams</SelectItem>
+                        <SelectItem value="kg">Kilograms</SelectItem>
+                        <SelectItem value="ton">Tons</SelectItem>
+                        <SelectItem value="lb">Pounds</SelectItem>
+                        <SelectItem value="oz">Ounces</SelectItem>
+                        
+                        {/* Packaging Units */}
+                        <SelectItem value="packet">Packet</SelectItem>
+                        <SelectItem value="box">Box</SelectItem>
+                        <SelectItem value="carton">Carton</SelectItem>
+                        <SelectItem value="bag">Bag</SelectItem>
+                        <SelectItem value="sack">Sack</SelectItem>
+                        <SelectItem value="bottle">Bottle</SelectItem>
+                        <SelectItem value="can">Can</SelectItem>
+                        <SelectItem value="jar">Jar</SelectItem>
+                        <SelectItem value="tube">Tube</SelectItem>
+                        <SelectItem value="roll">Roll</SelectItem>
+                        <SelectItem value="sheet">Sheet</SelectItem>
+                        <SelectItem value="bundle">Bundle</SelectItem>
+                        <SelectItem value="coil">Coil</SelectItem>
+                        
+                        {/* Other Common Units */}
+                        <SelectItem value="each">Each</SelectItem>
+                        <SelectItem value="unit">Unit</SelectItem>
+                        <SelectItem value="lot">Lot</SelectItem>
+                        <SelectItem value="batch">Batch</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

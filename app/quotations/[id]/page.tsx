@@ -21,6 +21,7 @@ interface QuotationItem {
     companyName: string;
   };
   quantity: number;
+  unit: string;
   unitPrice: number;
   sellingPrice: number;
   vendorCost: number;
@@ -478,7 +479,7 @@ export default function QuotationDetailPage() {
 
         // Unit (moved to position 2 after removing Size)
         pdf.text(
-          "PC",
+          item.unit || "PC",
           colPositions[2] + colWidths[2] / 2,
           currentY + rowHeight / 2,
           { align: "center" }
@@ -493,7 +494,7 @@ export default function QuotationDetailPage() {
         );
 
         // Unit Price (now position 4)
-        const unitPrice = item.sellingPrice.toFixed(0);
+        const unitPrice = item.sellingPrice.toFixed(2);
         pdf.text(
           unitPrice,
           colPositions[4] + colWidths[4] / 2,
@@ -503,7 +504,7 @@ export default function QuotationDetailPage() {
 
         // Total Price (now position 5)
         pdf.setFont("helvetica", "bold");
-        const totalPrice = item.lineTotal.toFixed(0);
+        const totalPrice = item.lineTotal.toFixed(2);
         pdf.text(
           totalPrice,
           colPositions[5] + colWidths[5] / 2,
@@ -531,7 +532,7 @@ export default function QuotationDetailPage() {
       pdf.setFont("helvetica", "bold");
       pdf.text("SUBTOTAL", totalsStartX + 2, currentY + 3.5);
       pdf.text(
-        quotation.subtotal.toFixed(0),
+        quotation.subtotal.toFixed(2),
         totalsStartX + correctTotalsWidth - 2,
         currentY + 3.5,
         { align: "right" }

@@ -502,8 +502,8 @@ export default function InvoiceDetailPage() {
       pdf.setFont("helvetica", "normal");
       pdf.text(item.quantity.toString(), colPositions[2] + 2, currentY + 4);
       pdf.text(item.unit, colPositions[3] + 2, currentY + 4);
-      pdf.text(item.sellingPrice.toFixed(0), colPositions[4] + 2, currentY + 4);
-      pdf.text(item.lineTotal.toFixed(0), colPositions[5] + 2, currentY + 4);
+      pdf.text(item.sellingPrice.toFixed(2), colPositions[4] + 2, currentY + 4);
+      pdf.text(item.lineTotal.toFixed(2), colPositions[5] + 2, currentY + 4);
 
       currentY += rowHeight;
     });
@@ -524,7 +524,7 @@ export default function InvoiceDetailPage() {
     pdf.setFont("helvetica", "bold");
     pdf.text("SUBTOTAL", totalsStartX + 2, currentY + 3.5);
     pdf.text(
-      invoice.subtotal.toFixed(0),
+      invoice.subtotal.toFixed(2),
       totalsStartX + correctTotalsWidth - 2,
       currentY + 3.5,
       { align: "right" }

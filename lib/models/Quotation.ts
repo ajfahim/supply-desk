@@ -119,7 +119,6 @@ const QuotationItemSchema = new Schema<IQuotationItem>({
     type: Number,
     required: true,
     min: 0,
-    max: 100,
   },
   sellingPrice: {
     type: Number,
