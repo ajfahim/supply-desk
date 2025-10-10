@@ -36,6 +36,21 @@ interface Settings {
   };
 }
 
+interface Vendor {
+  _id: string;
+  companyName: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+  };
+}
+
 export default function PricingPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -46,6 +61,7 @@ export default function PricingPage() {
   const [competitorPrices, setCompetitorPrices] = useState<string>('');
   const [vendorComparisons, setVendorComparisons] = useState<VendorComparison[]>([]);
   const [loading, setLoading] = useState(true);
+  
 
   useEffect(() => {
     fetchData();
@@ -371,6 +387,7 @@ export default function PricingPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
 
         <TabsContent value="bulk" className="space-y-6">
           <Card>

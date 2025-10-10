@@ -14,6 +14,7 @@ import {
   Truck,
   Shield,
   FolderTree,
+  DollarSign,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,6 +32,7 @@ const navigation = [
   { name: "Categories", href: "/categories", icon: FolderTree },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Vendors", href: "/vendors", icon: Building2 },
+  { name: "Vendor Pricing", href: "/vendor-pricing", icon: DollarSign },
   { name: "Pricing", href: "/pricing", icon: Calculator },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
